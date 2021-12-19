@@ -55,7 +55,7 @@ var ActiveGateDisplayNames = map[CapabilityDisplayName]struct{}{
 	KubeMonCapability.DisplayName:       struct{}{},
 	MetricsIngestCapability.DisplayName: struct{}{},
 	DynatraceApiCapability.DisplayName:  struct{}{},
-	StatsDIngestCapability.DisplayName:  struct{}{},
+	//StatsDIngestCapability.DisplayName: struct{}{}, // TODO Enable once EEC/StatsD images are pullable from the cluster
 }
 
 type ActiveGateSpec struct {
