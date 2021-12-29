@@ -30,10 +30,12 @@ func TestExtensionController_BuildContainerAndVolumes(t *testing.T) {
 		}
 
 		for _, mountPath := range []string{
-			"/var/lib/dynatrace/gateway/config",
+			activeGateConfigDir,
 			"/mnt/dsexecargs",
 			"/var/lib/dynatrace/remotepluginmodule/agent/runtime/datasources",
 			"/opt/dynatrace/remotepluginmodule/agent/datasources/statsd",
+			extensionsLogsDir,
+			statsDLogsDir,
 		} {
 			assertion.Truef(mountPathIsIn(container.VolumeMounts, mountPath), "Expected that EEC container defines mount point %s", mountPath)
 		}

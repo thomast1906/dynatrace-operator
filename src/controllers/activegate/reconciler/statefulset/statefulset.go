@@ -34,6 +34,8 @@ const (
 
 	ActivegateContainerName = "activegate"
 	ProxySecretKey          = "proxy"
+
+	activeGateConfigDir = "/var/lib/dynatrace/gateway/config"
 )
 
 type statefulSetProperties struct {
@@ -259,7 +261,9 @@ func buildVolumeMounts(stsProperties *statefulSetProperties) []corev1.VolumeMoun
 
 	if stsProperties.NeedsStatsD() {
 		volumeMounts = append(volumeMounts,
-			corev1.VolumeMount{Name: "auth-tokens", MountPath: "/var/lib/dynatrace/gateway/config"},
+			corev1.VolumeMount{Name: "auth-tokens", MountPath: activeGateConfigDir},
+			corev1.VolumeMount{Name: "extensions-logs", MountPath: extensionsLogsDir + "/eec", ReadOnly: true},
+			corev1.VolumeMount{Name: "statsd-logs", MountPath: extensionsLogsDir + "/statsd", ReadOnly: true},
 		)
 	}
 
