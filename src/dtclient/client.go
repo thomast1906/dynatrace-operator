@@ -81,6 +81,8 @@ const (
 
 // Known flavors.
 const (
+	FlavorDefault     = "default"
+	FlavorMusl        = "musl"
 	FlavorMultidistro = "multidistro"
 )
 
