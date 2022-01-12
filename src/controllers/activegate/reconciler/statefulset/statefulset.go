@@ -10,7 +10,6 @@ import (
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/internal/events"
 	"github.com/Dynatrace/dynatrace-operator/src/deploymentmetadata"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
-	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -50,7 +49,6 @@ type statefulSetProperties struct {
 	initContainersTemplates []corev1.Container
 	containerVolumeMounts   []corev1.VolumeMount
 	volumes                 []corev1.Volume
-	log                     logr.Logger
 }
 
 func NewStatefulSetProperties(instance *dynatracev1beta1.DynaKube, capabilityProperties *dynatracev1beta1.CapabilityProperties,
