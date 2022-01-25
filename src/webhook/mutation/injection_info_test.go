@@ -4,52 +4,16 @@ import (
 	"testing"
 )
 
-func TestFeature_name(t *testing.T) {
-	type fields struct {
-		ftype FeatureType
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "",
-			fields: fields{
-				ftype: OneAgent,
-			},
-			want: "oneagent",
-		},
-		{
-			name: "",
-			fields: fields{
-				ftype: DataIngest,
-			},
-			want: "data-ingest",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			f := Feature{
-				ftype: tt.fields.ftype,
-			}
-			if got := f.ftype.name(); got != tt.want {
-				t.Errorf("name() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestInjectionInfo_enabled(t *testing.T) {
 	features := func() map[FeatureType]bool {
 		i := NewInjectionInfo()
 		i.add(Feature{
-			ftype:   OneAgent,
-			enabled: true,
+			featureType: OneAgent,
+			enabled:     true,
 		})
 		i.add(Feature{
-			ftype:   DataIngest,
-			enabled: true,
+			featureType: DataIngest,
+			enabled:     true,
 		})
 		return i.features
 	}()
@@ -111,8 +75,8 @@ func TestInjectionInfo_injectedAnnotation(t *testing.T) {
 				features: func() map[FeatureType]bool {
 					i := NewInjectionInfo()
 					i.add(Feature{
-						ftype:   OneAgent,
-						enabled: true,
+						featureType: OneAgent,
+						enabled:     true,
 					})
 					return i.features
 				}(),
@@ -125,12 +89,12 @@ func TestInjectionInfo_injectedAnnotation(t *testing.T) {
 				features: func() map[FeatureType]bool {
 					i := NewInjectionInfo()
 					i.add(Feature{
-						ftype:   OneAgent,
-						enabled: true,
+						featureType: OneAgent,
+						enabled:     true,
 					})
 					i.add(Feature{
-						ftype:   DataIngest,
-						enabled: true,
+						featureType: DataIngest,
+						enabled:     true,
 					})
 					return i.features
 				}(),

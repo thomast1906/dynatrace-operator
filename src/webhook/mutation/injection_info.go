@@ -2,7 +2,6 @@ package mutation
 
 import (
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
@@ -13,49 +12,6 @@ import (
 type Injectable interface {
 	name() string
 	annotationValue() string
-}
-
-type FeatureType int
-
-const (
-	OneAgent FeatureType = iota
-	DataIngest
-)
-
-type Feature struct {
-	ftype   FeatureType
-	enabled bool
-}
-
-func NewFeature(ftype FeatureType, enabled bool) Feature {
-	return Feature{ftype: ftype, enabled: enabled}
-}
-
-func (f Feature) annotationValue() string {
-	return strconv.FormatBool(f.enabled)
-}
-
-func (f FeatureType) name() string {
-	anno := "unknown"
-	switch f {
-	case OneAgent:
-		anno = dtwebhook.OneAgentPrefix
-	case DataIngest:
-		anno = dtwebhook.DataIngestPrefix
-	}
-	return anno
-}
-
-// for testing only
-func (f FeatureType) namePrefixed() string {
-	anno := "unknown"
-	switch f {
-	case OneAgent:
-		anno = dtwebhook.AnnotationOneAgentInject
-	case DataIngest:
-		anno = dtwebhook.AnnotationDataIngestInject
-	}
-	return anno
 }
 
 type InjectionInfo struct {
@@ -86,7 +42,7 @@ func (info *InjectionInfo) enabled(wanted FeatureType) bool {
 	return exists && val
 }
 
-func (info *InjectionInfo) anyEnabled() bool {
+func (info *InjectionInfo) hasAnyEnabled() bool {
 	for _, enabled := range info.features {
 		if enabled {
 			return true
@@ -96,7 +52,7 @@ func (info *InjectionInfo) anyEnabled() bool {
 }
 
 func (info *InjectionInfo) add(f Feature) {
-	info.features[f.ftype] = f.enabled
+	info.features[f.featureType] = f.enabled
 }
 
 // for testing only
@@ -104,7 +60,7 @@ func (info *InjectionInfo) createInjectAnnotations() map[string]string {
 	m := make(map[string]string)
 	for featureType, enabled := range info.features {
 		f := NewFeature(featureType, enabled)
-		m[f.ftype.namePrefixed()] = f.annotationValue()
+		m[f.featureType.namePrefixed()] = f.annotationValue()
 	}
 
 	return m

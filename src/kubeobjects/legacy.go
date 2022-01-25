@@ -5,6 +5,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const kindOneAgentAPM = "OneAgentAPM"
+
 // CheckIfOneAgentAPMExists checks if a OneAgentAPM object exists
 func CheckIfOneAgentAPMExists(cfg *rest.Config) (bool, error) {
 	client, err := discovery.NewDiscoveryClientForConfig(cfg)
@@ -18,7 +20,7 @@ func CheckIfOneAgentAPMExists(cfg *rest.Config) (bool, error) {
 
 	for _, resource := range resourceList {
 		for _, apiResource := range resource.APIResources {
-			if apiResource.Kind == "OneAgentAPM" {
+			if apiResource.Kind == kindOneAgentAPM {
 				return true, nil
 			}
 		}
