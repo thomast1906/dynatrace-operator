@@ -178,16 +178,18 @@ endif
 	make reset-kustomization-files
 
 reset-kustomization-files: kustomize
+ifeq ($(PLATFORM), kubernetes)
 	rm -f config/deploy/kubernetes/kustomization.yaml
 	mkdir -p config/deploy/kubernetes
 	cd config/deploy/kubernetes && $(KUSTOMIZE) create
 	cd config/deploy/kubernetes && $(KUSTOMIZE) edit add base kubernetes-$(OUT).yaml
-
+endif
+ifeq ($(PLATFORM), openshift)
 	rm -f config/deploy/openshift/kustomization.yaml
 	mkdir -p config/deploy/openshift
 	cd config/deploy/openshift && $(KUSTOMIZE) create
 	cd config/deploy/openshift && $(KUSTOMIZE) edit add base openshift-$(OUT).yaml
-
+endif
 
 # Run go fmt against code
 fmt:
