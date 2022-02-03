@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
@@ -115,8 +115,8 @@ func (controller *NodesController) onDeletion(node string) error {
 		return err
 	}
 
-	if err = controller.removeNode(c, node, func(dkName string) (*dynatracev1beta1.DynaKube, error) {
-		var dynaKube dynatracev1beta1.DynaKube
+	if err = controller.removeNode(c, node, func(dkName string) (*dynatracev1beta2.DynaKube, error) {
+		var dynaKube dynatracev1beta2.DynaKube
 		if err := controller.client.Get(context.TODO(), client.ObjectKey{Name: dkName, Namespace: controller.namespace}, &dynaKube); err != nil {
 			return nil, err
 		}
@@ -131,12 +131,12 @@ func (controller *NodesController) onDeletion(node string) error {
 func (controller *NodesController) reconcileAll() error {
 	log.Info("reconciling nodes")
 
-	var dkList dynatracev1beta1.DynaKubeList
+	var dkList dynatracev1beta2.DynaKubeList
 	if err := controller.client.List(context.TODO(), &dkList, client.InNamespace(controller.namespace)); err != nil {
 		return err
 	}
 
-	dks := make(map[string]*dynatracev1beta1.DynaKube, len(dkList.Items))
+	dks := make(map[string]*dynatracev1beta2.DynaKube, len(dkList.Items))
 	for i := range dkList.Items {
 		dks[dkList.Items[i].Name] = &dkList.Items[i]
 	}
@@ -196,7 +196,7 @@ func (controller *NodesController) reconcileAll() error {
 			continue
 		}
 
-		if err := controller.removeNode(c, node, func(name string) (*dynatracev1beta1.DynaKube, error) {
+		if err := controller.removeNode(c, node, func(name string) (*dynatracev1beta2.DynaKube, error) {
 			if dk, ok := dks[name]; ok {
 				return dk, nil
 			}
@@ -261,7 +261,7 @@ func (controller *NodesController) updateCache(c *Cache) error {
 	return controller.client.Update(context.TODO(), c.Obj)
 }
 
-func (controller *NodesController) removeNode(c *Cache, node string, dkFunc func(name string) (*dynatracev1beta1.DynaKube, error)) error {
+func (controller *NodesController) removeNode(c *Cache, node string, dkFunc func(name string) (*dynatracev1beta2.DynaKube, error)) error {
 	logger := log.WithValues("node", node)
 
 	nodeInfo, err := c.Get(node)
@@ -311,7 +311,7 @@ func (controller *NodesController) updateNode(c *Cache, nodeName string) error {
 	return controller.reconcileUnschedulableNode(node, c)
 }
 
-func (controller *NodesController) sendMarkedForTermination(dk *dynatracev1beta1.DynaKube, nodeIP string, lastSeen time.Time) error {
+func (controller *NodesController) sendMarkedForTermination(dk *dynatracev1beta2.DynaKube, nodeIP string, lastSeen time.Time) error {
 	dtp, err := dynakube.NewDynatraceClientProperties(context.TODO(), controller.client, *dk)
 	if err != nil {
 		log.Error(err, err.Error())
@@ -373,7 +373,7 @@ func (controller *NodesController) reconcileUnschedulableNode(node *corev1.Node,
 	return controller.markForTermination(c, dynakube, instance.IPAddress, node.Name)
 }
 
-func (controller *NodesController) markForTermination(c *Cache, dk *dynatracev1beta1.DynaKube,
+func (controller *NodesController) markForTermination(c *Cache, dk *dynatracev1beta2.DynaKube,
 	ipAddress string, nodeName string) error {
 	cachedNode, err := c.Get(nodeName)
 	if err != nil {

@@ -3,7 +3,7 @@ package daemonset
 import (
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/deploymentmetadata"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
 	appsv1 "k8s.io/api/apps/v1"
@@ -20,7 +20,7 @@ const (
 
 	annotationUnprivileged      = "container.apparmor.security.beta.kubernetes.io/dynatrace-oneagent"
 	annotationUnprivilegedValue = "unconfined"
-	annotationVersion           = dynatracev1beta1.InternalFlagPrefix + "version"
+	annotationVersion           = dynatracev1beta2.InternalFlagPrefix + "version"
 
 	defaultUnprivilegedServiceAccountName = "dynatrace-dynakube-oneagent-unprivileged"
 
@@ -48,8 +48,8 @@ type ClassicFullStack struct {
 }
 
 type builderInfo struct {
-	instance       *dynatracev1beta1.DynaKube
-	hostInjectSpec *dynatracev1beta1.HostInjectSpec
+	instance       *dynatracev1beta2.DynaKube
+	hostInjectSpec *dynatracev1beta2.HostInjectSpec
 	clusterId      string
 	deploymentType string
 }
@@ -58,7 +58,7 @@ type Builder interface {
 	BuildDaemonSet() (*appsv1.DaemonSet, error)
 }
 
-func NewHostMonitoring(instance *dynatracev1beta1.DynaKube, clusterId string) Builder {
+func NewHostMonitoring(instance *dynatracev1beta2.DynaKube, clusterId string) Builder {
 	return &HostMonitoring{
 		builderInfo{
 			instance:       instance,
@@ -70,7 +70,7 @@ func NewHostMonitoring(instance *dynatracev1beta1.DynaKube, clusterId string) Bu
 	}
 }
 
-func NewCloudNativeFullStack(instance *dynatracev1beta1.DynaKube, clusterId string) Builder {
+func NewCloudNativeFullStack(instance *dynatracev1beta2.DynaKube, clusterId string) Builder {
 	return &HostMonitoring{
 		builderInfo{
 			instance:       instance,
@@ -82,7 +82,7 @@ func NewCloudNativeFullStack(instance *dynatracev1beta1.DynaKube, clusterId stri
 	}
 }
 
-func NewClassicFullStack(instance *dynatracev1beta1.DynaKube, clusterId string) Builder {
+func NewClassicFullStack(instance *dynatracev1beta2.DynaKube, clusterId string) Builder {
 	return &ClassicFullStack{
 		builderInfo{
 			instance:       instance,

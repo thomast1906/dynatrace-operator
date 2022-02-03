@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
 	"github.com/pkg/errors"
@@ -38,7 +38,7 @@ const (
 	certificates = "certs"
 )
 
-func NewDynatraceClientProperties(ctx context.Context, apiReader client.Reader, dk dynatracev1beta1.DynaKube) (*DynatraceClientProperties, error) {
+func NewDynatraceClientProperties(ctx context.Context, apiReader client.Reader, dk dynatracev1beta2.DynaKube) (*DynatraceClientProperties, error) {
 	var tokens corev1.Secret
 	var err error
 	if err = apiReader.Get(ctx, client.ObjectKey{Name: dk.Tokens(), Namespace: dk.Namespace}, &tokens); err != nil {

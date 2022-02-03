@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	dtcsi "github.com/Dynatrace/dynatrace-operator/src/controllers/csi"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/csi/metadata"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube"
@@ -71,7 +71,7 @@ func NewOneAgentProvisioner(mgr manager.Manager, opts dtcsi.CSIOptions, db metad
 
 func (provisioner *OneAgentProvisioner) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&dynatracev1beta1.DynaKube{}).
+		For(&dynatracev1beta2.DynaKube{}).
 		Complete(provisioner)
 }
 
@@ -170,7 +170,7 @@ func (provisioner *OneAgentProvisioner) createOrUpdateDynakube(oldDynakube metad
 	return nil
 }
 
-func buildDtc(provisioner *OneAgentProvisioner, ctx context.Context, dk *dynatracev1beta1.DynaKube) (dtclient.Client, error) {
+func buildDtc(provisioner *OneAgentProvisioner, ctx context.Context, dk *dynatracev1beta2.DynaKube) (dtclient.Client, error) {
 	dtp, err := dynakube.NewDynatraceClientProperties(ctx, provisioner.apiReader, *dk)
 	if err != nil {
 		return nil, err
@@ -183,8 +183,8 @@ func buildDtc(provisioner *OneAgentProvisioner, ctx context.Context, dk *dynatra
 	return dtc, nil
 }
 
-func (provisioner *OneAgentProvisioner) getDynaKube(ctx context.Context, name types.NamespacedName) (*dynatracev1beta1.DynaKube, error) {
-	var dk dynatracev1beta1.DynaKube
+func (provisioner *OneAgentProvisioner) getDynaKube(ctx context.Context, name types.NamespacedName) (*dynatracev1beta2.DynaKube, error) {
+	var dk dynatracev1beta2.DynaKube
 	err := provisioner.apiReader.Get(ctx, name, &dk)
 
 	return &dk, err

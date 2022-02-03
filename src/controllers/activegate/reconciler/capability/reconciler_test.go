@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/customproperties"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/internal/consts"
@@ -28,12 +28,10 @@ const (
 	testNamespace = "test-namespace"
 )
 
-var metricsCapability = capability.NewRoutingCapability(
-	&dynatracev1beta1.DynaKube{
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			Routing: dynatracev1beta1.RoutingSpec{
-				Enabled: true,
-			},
+var metricsCapability = capability.NewMultiCapability(
+	&dynatracev1beta2.ActiveGateSpec{
+		Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+			dynatracev1beta2.RoutingCapability.DisplayName: {},
 		},
 	},
 )
@@ -52,11 +50,11 @@ func createDefaultReconciler(t *testing.T) *Reconciler {
 			},
 		}).
 		Build()
-	instance := &dynatracev1beta1.DynaKube{
+	instance := &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: testNamespace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: "https://testing.dev.dynatracelabs.com/api",
 		},
 	}
@@ -116,7 +114,7 @@ func TestReconcile(t *testing.T) {
 	t.Run(`reconcile custom properties`, func(t *testing.T) {
 		r := createDefaultReconciler(t)
 
-		metricsCapability.Properties().CustomProperties = &dynatracev1beta1.DynaKubeValueSource{
+		metricsCapability.Properties().CustomProperties = &dynatracev1beta2.DynaKubeValueSource{
 			Value: testValue,
 		}
 		// Reconcile twice since service is created before the stateful set is
@@ -158,7 +156,7 @@ func TestReconcile(t *testing.T) {
 			assert.Equal(t, 0, found)
 		}
 
-		r.Instance.Spec.Proxy = &dynatracev1beta1.DynaKubeProxy{Value: testValue}
+		r.Instance.Spec.Proxy = &dynatracev1beta2.DynaKubeProxy{Value: testValue}
 		reconcileAndExpectUpdate(r, true)
 		{
 			statefulSet := assertStatefulSetExists(r)
@@ -266,7 +264,7 @@ func TestSetReadinessProbePort(t *testing.T) {
 func TestReconciler_calculateStatefulSetName(t *testing.T) {
 	type fields struct {
 		Reconciler *rsfs.Reconciler
-		Capability *capability.RoutingCapability
+		Capability *capability.MultiCapability
 	}
 	tests := []struct {
 		name   string
@@ -277,7 +275,7 @@ func TestReconciler_calculateStatefulSetName(t *testing.T) {
 			name: "instance and module names are defined",
 			fields: fields{
 				Reconciler: &rsfs.Reconciler{
-					Instance: &dynatracev1beta1.DynaKube{
+					Instance: &dynatracev1beta2.DynaKube{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: "instanceName",
 						},
@@ -285,13 +283,13 @@ func TestReconciler_calculateStatefulSetName(t *testing.T) {
 				},
 				Capability: metricsCapability,
 			},
-			want: "instanceName-routing",
+			want: "instanceName-" + capability.MultiActiveGateName,
 		},
 		{
 			name: "empty instance name",
 			fields: fields{
 				Reconciler: &rsfs.Reconciler{
-					Instance: &dynatracev1beta1.DynaKube{
+					Instance: &dynatracev1beta2.DynaKube{
 						ObjectMeta: metav1.ObjectMeta{
 							Name: "",
 						},

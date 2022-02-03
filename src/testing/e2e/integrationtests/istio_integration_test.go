@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/stretchr/testify/assert"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,12 +19,12 @@ func TestReconcileOneAgent_ReconcileIstio(t *testing.T) {
 
 	defer e.Stop()
 
-	e.AddOneAgent("dynakube", &dynatracev1beta1.DynaKubeSpec{
+	e.AddOneAgent("dynakube", &dynatracev1beta2.DynaKubeSpec{
 		APIURL:      DefaultTestAPIURL,
 		Tokens:      "token-test",
 		EnableIstio: true,
-		OneAgent: dynatracev1beta1.OneAgentSpec{
-			ClassicFullStack: &dynatracev1beta1.ClassicFullStackSpec{},
+		OneAgent: dynatracev1beta2.OneAgentSpec{
+			ClassicFullStack: &dynatracev1beta2.ClassicFullStackSpec{},
 		},
 	})
 
@@ -59,21 +59,21 @@ func TestReconcileOneAgent_ReconcileIstioWithMultipleOneAgentObjects(t *testing.
 
 	defer e.Stop()
 
-	e.AddOneAgent("oneagent1", &dynatracev1beta1.DynaKubeSpec{
+	e.AddOneAgent("oneagent1", &dynatracev1beta2.DynaKubeSpec{
 		APIURL:      DefaultTestAPIURL,
 		Tokens:      "token-test",
 		EnableIstio: true,
-		OneAgent: dynatracev1beta1.OneAgentSpec{
-			ClassicFullStack: &dynatracev1beta1.ClassicFullStackSpec{},
+		OneAgent: dynatracev1beta2.OneAgentSpec{
+			ClassicFullStack: &dynatracev1beta2.ClassicFullStackSpec{},
 		},
 	})
 
-	e.AddOneAgent("oneagent2", &dynatracev1beta1.DynaKubeSpec{
+	e.AddOneAgent("oneagent2", &dynatracev1beta2.DynaKubeSpec{
 		APIURL:      DefaultTestAPIURL,
 		Tokens:      "token-test",
 		EnableIstio: true,
-		OneAgent: dynatracev1beta1.OneAgentSpec{
-			ClassicFullStack: &dynatracev1beta1.ClassicFullStackSpec{},
+		OneAgent: dynatracev1beta2.OneAgentSpec{
+			ClassicFullStack: &dynatracev1beta2.ClassicFullStackSpec{},
 		},
 	})
 

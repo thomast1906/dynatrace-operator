@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/e2e"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -40,7 +40,7 @@ func TestTrustedCAs(t *testing.T) {
 
 	phaseWait := e2e.NewOneAgentWaitConfiguration(t, clt, maxWaitCycles, namespace, testName)
 	// Waiting for error, since given certificate is not actually a valid certificate
-	err = phaseWait.WaitForPhase(dynatracev1beta1.Error)
+	err = phaseWait.WaitForPhase(dynatracev1beta2.Error)
 	assert.NoError(t, err)
 
 	_, pods := findOneAgentPods(t, clt)

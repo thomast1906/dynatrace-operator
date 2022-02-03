@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/csi/metadata"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/spf13/afero"
@@ -154,7 +154,7 @@ func TestUpdateProcessModuleConfig(t *testing.T) {
 	prepTestConfFs(memFs)
 	agentConfig := &installAgentConfig{
 		fs: memFs,
-		dk: &dynatracev1beta1.DynaKube{},
+		dk: &dynatracev1beta2.DynaKube{},
 	}
 	expectedUsed := `
 [general]
@@ -187,11 +187,11 @@ func TestCheckProcessModuleConfigCopy(t *testing.T) {
 
 func TestAddHostGroup(t *testing.T) {
 	t.Run(`dk with hostGroup, no api`, func(t *testing.T) {
-		dk := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				OneAgent: dynatracev1beta1.OneAgentSpec{
-					CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{
-						HostInjectSpec: dynatracev1beta1.HostInjectSpec{
+		dk := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
+				OneAgent: dynatracev1beta2.OneAgentSpec{
+					CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{
+						HostInjectSpec: dynatracev1beta2.HostInjectSpec{
 							Args: []string{
 								"--set-host-group=test",
 							},
@@ -206,11 +206,11 @@ func TestAddHostGroup(t *testing.T) {
 		assert.Equal(t, "test", result.ToMap()["general"]["hostGroup"])
 	})
 	t.Run(`dk with hostGroup, api present`, func(t *testing.T) {
-		dk := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				OneAgent: dynatracev1beta1.OneAgentSpec{
-					CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{
-						HostInjectSpec: dynatracev1beta1.HostInjectSpec{
+		dk := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
+				OneAgent: dynatracev1beta2.OneAgentSpec{
+					CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{
+						HostInjectSpec: dynatracev1beta2.HostInjectSpec{
 							Args: []string{
 								"--set-host-group=test",
 							},
@@ -234,11 +234,11 @@ func TestAddHostGroup(t *testing.T) {
 		assert.Equal(t, "test", result.ToMap()["general"]["hostGroup"])
 	})
 	t.Run(`dk without hostGroup`, func(t *testing.T) {
-		dk := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				OneAgent: dynatracev1beta1.OneAgentSpec{
-					CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{
-						HostInjectSpec: dynatracev1beta1.HostInjectSpec{},
+		dk := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
+				OneAgent: dynatracev1beta2.OneAgentSpec{
+					CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{
+						HostInjectSpec: dynatracev1beta2.HostInjectSpec{},
 					},
 				},
 			},
@@ -257,11 +257,11 @@ func TestAddHostGroup(t *testing.T) {
 		assert.Equal(t, *result, pmc)
 	})
 	t.Run(`dk without hostGroup, remove previous hostgroup`, func(t *testing.T) {
-		dk := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				OneAgent: dynatracev1beta1.OneAgentSpec{
-					CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{
-						HostInjectSpec: dynatracev1beta1.HostInjectSpec{},
+		dk := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
+				OneAgent: dynatracev1beta2.OneAgentSpec{
+					CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{
+						HostInjectSpec: dynatracev1beta2.HostInjectSpec{},
 					},
 				},
 			},

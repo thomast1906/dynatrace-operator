@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	agcapability "github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
 	"github.com/go-logr/logr"
@@ -43,7 +43,7 @@ func NewActiveGateProxySecretGenerator(client client.Client, apiReader client.Re
 	}
 }
 
-func (agProxySecretGenerator *ActiveGateProxySecretGenerator) GenerateForDynakube(ctx context.Context, dynakube *dynatracev1beta1.DynaKube) (bool, error) {
+func (agProxySecretGenerator *ActiveGateProxySecretGenerator) GenerateForDynakube(ctx context.Context, dynakube *dynatracev1beta2.DynaKube) (bool, error) {
 	data, err := agProxySecretGenerator.createProxyMap(ctx, dynakube)
 	if err != nil {
 		return false, err
@@ -51,7 +51,7 @@ func (agProxySecretGenerator *ActiveGateProxySecretGenerator) GenerateForDynakub
 	return kubeobjects.CreateOrUpdateSecretIfNotExists(agProxySecretGenerator.client, agProxySecretGenerator.apiReader, BuildProxySecretName(), agProxySecretGenerator.namespace, data, corev1.SecretTypeOpaque, agProxySecretGenerator.logger)
 }
 
-func (agProxySecretGenerator *ActiveGateProxySecretGenerator) EnsureDeleted(ctx context.Context, dynakube *dynatracev1beta1.DynaKube) error {
+func (agProxySecretGenerator *ActiveGateProxySecretGenerator) EnsureDeleted(ctx context.Context, dynakube *dynatracev1beta2.DynaKube) error {
 	secretName := BuildProxySecretName()
 	secret := corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: secretName, Namespace: dynakube.Namespace}}
 	if err := agProxySecretGenerator.client.Delete(ctx, &secret); err != nil && !k8serrors.IsNotFound(err) {
@@ -66,7 +66,7 @@ func BuildProxySecretName() string {
 	return "dynatrace" + "-" + agcapability.MultiActiveGateName + "-" + activeGateProxySecretSuffix
 }
 
-func (agProxySecretGenerator *ActiveGateProxySecretGenerator) createProxyMap(ctx context.Context, dynakube *dynatracev1beta1.DynaKube) (map[string][]byte, error) {
+func (agProxySecretGenerator *ActiveGateProxySecretGenerator) createProxyMap(ctx context.Context, dynakube *dynatracev1beta2.DynaKube) (map[string][]byte, error) {
 	var err error
 	proxyUrl := ""
 	if dynakube.Spec.Proxy != nil && dynakube.Spec.Proxy.ValueFrom != "" {
@@ -98,11 +98,11 @@ func (agProxySecretGenerator *ActiveGateProxySecretGenerator) createProxyMap(ctx
 	}, nil
 }
 
-func proxyUrlFromSpec(dynakube *dynatracev1beta1.DynaKube) string {
+func proxyUrlFromSpec(dynakube *dynatracev1beta2.DynaKube) string {
 	return dynakube.Spec.Proxy.Value
 }
 
-func (agProxySecretGenerator *ActiveGateProxySecretGenerator) proxyUrlFromUserSecret(ctx context.Context, dynakube *dynatracev1beta1.DynaKube) (string, error) {
+func (agProxySecretGenerator *ActiveGateProxySecretGenerator) proxyUrlFromUserSecret(ctx context.Context, dynakube *dynatracev1beta2.DynaKube) (string, error) {
 	var proxySecret corev1.Secret
 	if err := agProxySecretGenerator.client.Get(ctx, client.ObjectKey{Name: dynakube.Spec.Proxy.ValueFrom, Namespace: agProxySecretGenerator.namespace}, &proxySecret); err != nil {
 		return "", errors.WithMessage(err, fmt.Sprintf("failed to query %s secret", dynakube.Spec.Proxy.ValueFrom))

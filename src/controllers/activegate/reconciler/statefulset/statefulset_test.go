@@ -3,7 +3,7 @@ package statefulset
 import (
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/customproperties"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/internal/consts"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/dtpullsecret"
@@ -29,11 +29,11 @@ const (
 )
 
 func TestNewStatefulSetBuilder(t *testing.T) {
-	stsBuilder := NewStatefulSetProperties(&dynatracev1beta1.DynaKube{}, &dynatracev1beta1.CapabilityProperties{},
+	stsBuilder := NewStatefulSetProperties(&dynatracev1beta2.DynaKube{}, &dynatracev1beta2.ActiveGateProperties{},
 		testUID, testValue, "", "", "", nil, nil, nil)
 	assert.NotNil(t, stsBuilder)
 	assert.NotNil(t, stsBuilder.DynaKube)
-	assert.NotNil(t, stsBuilder.CapabilityProperties)
+	assert.NotNil(t, stsBuilder.ActiveGateProperties)
 	assert.NotNil(t, stsBuilder.customPropertiesHash)
 	assert.NotEmpty(t, stsBuilder.customPropertiesHash)
 	assert.NotEmpty(t, stsBuilder.kubeSystemUID)
@@ -41,7 +41,7 @@ func TestNewStatefulSetBuilder(t *testing.T) {
 
 func TestStatefulSetBuilder_Build(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 	sts, err := CreateStatefulSet(NewStatefulSetProperties(instance, capabilityProperties,
 		"", "", testFeature, "", "", nil, nil, nil))
 
@@ -54,7 +54,7 @@ func TestStatefulSetBuilder_Build(t *testing.T) {
 		KeyActiveGate: instance.Name,
 		KeyFeature:    testFeature,
 	}, sts.Labels)
-	assert.Equal(t, instance.Spec.ActiveGate.Replicas, sts.Spec.Replicas)
+	assert.Equal(t, instance.Spec.ActiveGates[0].Replicas, sts.Spec.Replicas)
 	assert.Equal(t, appsv1.ParallelPodManagement, sts.Spec.PodManagementPolicy)
 	assert.Equal(t, metav1.LabelSelector{
 		MatchLabels: BuildLabelsFromInstance(instance, testFeature),
@@ -83,7 +83,7 @@ func TestStatefulSetBuilder_Build(t *testing.T) {
 
 func TestStatefulSet_TemplateSpec(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 	templateSpec := buildTemplateSpec(NewStatefulSetProperties(instance, capabilityProperties,
 		"", "", "", "", "", nil, nil, nil))
 
@@ -111,7 +111,7 @@ func TestStatefulSet_TemplateSpec(t *testing.T) {
 
 func TestStatefulSet_Container(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 	stsProperties := NewStatefulSetProperties(instance, capabilityProperties,
 		"", "", "", "", "", nil, nil, nil)
 	extraContainerBuilders := getContainerBuilders(stsProperties)
@@ -135,7 +135,7 @@ func TestStatefulSet_Container(t *testing.T) {
 
 func TestStatefulSet_Volumes(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 
 	t.Run(`without custom properties`, func(t *testing.T) {
 		stsProperties := NewStatefulSetProperties(instance, capabilityProperties,
@@ -148,7 +148,7 @@ func TestStatefulSet_Volumes(t *testing.T) {
 		)
 	})
 	t.Run(`custom properties from value string`, func(t *testing.T) {
-		capabilityProperties.CustomProperties = &dynatracev1beta1.DynaKubeValueSource{
+		capabilityProperties.CustomProperties = &dynatracev1beta2.DynaKubeValueSource{
 			Value: testValue,
 		}
 		stsProperties := NewStatefulSetProperties(instance, capabilityProperties,
@@ -170,7 +170,7 @@ func TestStatefulSet_Volumes(t *testing.T) {
 		}, customPropertiesVolume.Secret.Items)
 	})
 	t.Run(`custom properties from valueFrom`, func(t *testing.T) {
-		capabilityProperties.CustomProperties = &dynatracev1beta1.DynaKubeValueSource{
+		capabilityProperties.CustomProperties = &dynatracev1beta2.DynaKubeValueSource{
 			ValueFrom: testKey,
 		}
 		stsProperties := NewStatefulSetProperties(instance, capabilityProperties,
@@ -195,7 +195,7 @@ func TestStatefulSet_Volumes(t *testing.T) {
 
 func TestStatefulSet_Env(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 	deploymentMetadata := deploymentmetadata.NewDeploymentMetadata(string(testUID), deploymentmetadata.DeploymentTypeActiveGate)
 
 	t.Run(`without proxy`, func(t *testing.T) {
@@ -214,7 +214,7 @@ func TestStatefulSet_Env(t *testing.T) {
 	t.Run(`with networkzone`, func(t *testing.T) {
 		instance := buildTestInstance()
 		instance.Spec.NetworkZone = testName
-		capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+		capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 		envVars := buildEnvs(NewStatefulSetProperties(instance, capabilityProperties,
 			"", "", "", "", "",
 			nil, nil, nil,
@@ -229,8 +229,8 @@ func TestStatefulSet_Env(t *testing.T) {
 	})
 	t.Run(`with group`, func(t *testing.T) {
 		instance := buildTestInstance()
-		instance.Spec.ActiveGate.Group = testValue
-		capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+		instance.Spec.ActiveGates[0].Group = testValue
+		capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 		envVars := buildEnvs(NewStatefulSetProperties(instance, capabilityProperties,
 			"", "", "", "", "",
 			nil, nil, nil,
@@ -247,7 +247,7 @@ func TestStatefulSet_Env(t *testing.T) {
 
 func TestStatefulSet_VolumeMounts(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 
 	t.Run(`without custom properties`, func(t *testing.T) {
 		volumeMounts := buildVolumeMounts(NewStatefulSetProperties(instance, capabilityProperties,
@@ -259,7 +259,7 @@ func TestStatefulSet_VolumeMounts(t *testing.T) {
 		)
 	})
 	t.Run(`with custom properties`, func(t *testing.T) {
-		capabilityProperties.CustomProperties = &dynatracev1beta1.DynaKubeValueSource{Value: testValue}
+		capabilityProperties.CustomProperties = &dynatracev1beta2.DynaKubeValueSource{Value: testValue}
 		volumeMounts := buildVolumeMounts(NewStatefulSetProperties(instance, capabilityProperties,
 			"", "", "", "", "",
 			nil, nil, nil,
@@ -274,7 +274,7 @@ func TestStatefulSet_VolumeMounts(t *testing.T) {
 		})
 	})
 	t.Run(`with proxy from value`, func(t *testing.T) {
-		instance.Spec.Proxy = &dynatracev1beta1.DynaKubeProxy{Value: testValue}
+		instance.Spec.Proxy = &dynatracev1beta2.DynaKubeProxy{Value: testValue}
 		volumeMounts := buildVolumeMounts(NewStatefulSetProperties(instance, capabilityProperties,
 			"", "", "", "", "", nil, nil, nil))
 
@@ -307,7 +307,7 @@ func TestStatefulSet_VolumeMounts(t *testing.T) {
 		})
 	})
 	t.Run(`with proxy from value source`, func(t *testing.T) {
-		instance.Spec.Proxy = &dynatracev1beta1.DynaKubeProxy{ValueFrom: testName}
+		instance.Spec.Proxy = &dynatracev1beta2.DynaKubeProxy{ValueFrom: testName}
 		volumeMounts := buildVolumeMounts(NewStatefulSetProperties(instance, capabilityProperties,
 			"", "", "", "", "", nil, nil, nil))
 
@@ -343,14 +343,14 @@ func TestStatefulSet_VolumeMounts(t *testing.T) {
 
 func TestStatefulSet_Resources(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 
 	quantityCpuLimit := resource.NewScaledQuantity(700, resource.Milli)
 	quantityMemoryLimit := resource.NewScaledQuantity(7, resource.Giga)
 	quantityCpuRequest := resource.NewScaledQuantity(500, resource.Milli)
 	quantityMemoryRequest := resource.NewScaledQuantity(5, resource.Giga)
 
-	instance.Spec.ActiveGate.Resources = corev1.ResourceRequirements{
+	instance.Spec.ActiveGates[0].Resources = corev1.ResourceRequirements{
 		Limits: corev1.ResourceList{
 			corev1.ResourceCPU:    *quantityCpuLimit,
 			corev1.ResourceMemory: *quantityMemoryLimit,
@@ -374,35 +374,36 @@ func TestStatefulSet_Resources(t *testing.T) {
 
 func TestStatefulSet_DNSPolicy(t *testing.T) {
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 
 	podSpec := buildTemplateSpec(NewStatefulSetProperties(instance, capabilityProperties, "", "", "", "", "", nil, nil, nil))
 
 	assert.Equal(t, testDNSPolicy, podSpec.DNSPolicy)
 }
 
-func buildTestInstance() *dynatracev1beta1.DynaKube {
+func buildTestInstance() *dynatracev1beta2.DynaKube {
 	replicas := int32(3)
-	return &dynatracev1beta1.DynaKube{
+	return &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testName,
 			Namespace: testNamespace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			APIURL: "https://testing.dev.dynatracelabs.com/api",
-			ActiveGate: dynatracev1beta1.ActiveGateSpec{
-				Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-					dynatracev1beta1.RoutingCapability.DisplayName,
-				},
-				DNSPolicy: testDNSPolicy,
-				CapabilityProperties: dynatracev1beta1.CapabilityProperties{
-					Replicas:    &replicas,
-					Tolerations: []corev1.Toleration{{Value: testValue}},
-					NodeSelector: map[string]string{
-						testKey: testValue,
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.RoutingCapability.DisplayName: {},
 					},
-					Env: []corev1.EnvVar{
-						{Name: testKey, Value: testValue},
+					ActiveGateProperties: dynatracev1beta2.ActiveGateProperties{
+						Replicas:    &replicas,
+						Tolerations: []corev1.Toleration{{Value: testValue}},
+						NodeSelector: map[string]string{
+							testKey: testValue,
+						},
+						Env: []corev1.EnvVar{
+							{Name: testKey, Value: testValue},
+						},
+						DNSPolicy: testDNSPolicy,
 					},
 				},
 			},

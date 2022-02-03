@@ -3,22 +3,22 @@ package daemonset
 import (
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPrepareVolumes(t *testing.T) {
 	t.Run(`has root volume`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		volumes := prepareVolumes(instance)
 
 		assert.Contains(t, volumes, getRootVolume())
 		assert.NotContains(t, volumes, getCertificateVolume(instance))
 	})
 	t.Run(`has certificate volume`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				TrustedCAs: testName,
 			},
 		}
@@ -28,14 +28,18 @@ func TestPrepareVolumes(t *testing.T) {
 		assert.Contains(t, volumes, getCertificateVolume(instance))
 	})
 	t.Run(`has tls volume`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				TrustedCAs: testName,
-				ActiveGate: dynatracev1beta1.ActiveGateSpec{
-					Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-						dynatracev1beta1.KubeMonCapability.DisplayName,
+				ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+					{
+						Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+							dynatracev1beta2.KubeMonCapability.DisplayName: {},
+						},
+						ActiveGateProperties: dynatracev1beta2.ActiveGateProperties{
+							TlsSecretName: "testing",
+						},
 					},
-					TlsSecretName: "testing",
 				},
 			},
 		}
@@ -43,17 +47,21 @@ func TestPrepareVolumes(t *testing.T) {
 		assert.Contains(t, volumes, getTLSVolume(instance))
 	})
 	t.Run(`has all volumes`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				TrustedCAs: testName,
-				OneAgent: dynatracev1beta1.OneAgentSpec{
-					HostMonitoring: &dynatracev1beta1.HostMonitoringSpec{},
+				OneAgent: dynatracev1beta2.OneAgentSpec{
+					HostMonitoring: &dynatracev1beta2.HostMonitoringSpec{},
 				},
-				ActiveGate: dynatracev1beta1.ActiveGateSpec{
-					Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-						dynatracev1beta1.KubeMonCapability.DisplayName,
+				ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+					{
+						Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+							dynatracev1beta2.KubeMonCapability.DisplayName: {},
+						},
+						ActiveGateProperties: dynatracev1beta2.ActiveGateProperties{
+							TlsSecretName: "testing",
+						},
 					},
-					TlsSecretName: "testing",
 				},
 			},
 		}

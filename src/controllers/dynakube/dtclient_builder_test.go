@@ -3,7 +3,7 @@ package dynakube
 import (
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme/fake"
 	"github.com/stretchr/testify/assert"
@@ -31,8 +31,8 @@ func TestBuildDynatraceClient(t *testing.T) {
 				dtclient.DynatraceApiToken:  []byte(testValue),
 				dtclient.DynatracePaasToken: []byte(testValueAlternative),
 			}}
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testEndpoint,
 			}}
 		fakeClient := fake.NewClient(instance, &secret)
@@ -61,8 +61,8 @@ func TestBuildDynatraceClient(t *testing.T) {
 			Data: map[string][]byte{
 				//Simulate missing values
 			}}
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testEndpoint,
 			}}
 		fakeClient := fake.NewClient(instance, &secret)
@@ -95,10 +95,10 @@ func TestBuildDynatraceClient(t *testing.T) {
 				dtclient.DynatraceApiToken:  []byte(testValue),
 				dtclient.DynatracePaasToken: []byte(testValueAlternative),
 			}}
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testEndpoint,
-				Proxy: &dynatracev1beta1.DynaKubeProxy{
+				Proxy: &dynatracev1beta2.DynaKubeProxy{
 					ValueFrom: testKey,
 				}}}
 		fakeClient := fake.NewClient(instance, &secret)
@@ -124,8 +124,8 @@ func TestBuildDynatraceClient(t *testing.T) {
 				dtclient.DynatraceApiToken:  []byte(testValue),
 				dtclient.DynatracePaasToken: []byte(testValueAlternative),
 			}}
-		instance := &dynatracev1beta1.DynaKube{
-			Spec: dynatracev1beta1.DynaKubeSpec{
+		instance := &dynatracev1beta2.DynaKube{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL:     testEndpoint,
 				TrustedCAs: testKey,
 			}}
@@ -152,11 +152,11 @@ func TestBuildDynatraceClient(t *testing.T) {
 // 		assert.NotNil(t, options)
 // 		assert.Empty(t, options.Opts)
 
-// 		options.appendNetworkZone(&dynatracev1beta1.DynaKubeSpec{})
+// 		options.appendNetworkZone(&dynatracev1beta2.DynaKubeSpec{})
 
 // 		assert.Empty(t, options.Opts)
 
-// 		options.appendNetworkZone(&dynatracev1beta1.DynaKubeSpec{
+// 		options.appendNetworkZone(&dynatracev1beta2.DynaKubeSpec{
 // 			NetworkZone: testValue,
 // 		})
 

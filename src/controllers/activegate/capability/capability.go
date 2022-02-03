@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -25,11 +25,11 @@ const (
 
 type baseFunc func() *capabilityBase
 
-var activeGateCapabilities = map[dynatracev1beta1.CapabilityDisplayName]baseFunc{
-	dynatracev1beta1.KubeMonCapability.DisplayName:       kubeMonBase,
-	dynatracev1beta1.RoutingCapability.DisplayName:       routingBase,
-	dynatracev1beta1.MetricsIngestCapability.DisplayName: metricsIngestBase,
-	dynatracev1beta1.DynatraceApiCapability.DisplayName:  dynatraceApiBase,
+var activeGateCapabilities = map[dynatracev1beta2.CapabilityDisplayName]baseFunc{
+	dynatracev1beta2.KubeMonCapability.DisplayName:       kubeMonBase,
+	dynatracev1beta2.RoutingCapability.DisplayName:       routingBase,
+	dynatracev1beta2.MetricsIngestCapability.DisplayName: metricsIngestBase,
+	dynatracev1beta2.DynatraceApiCapability.DisplayName:  dynatraceApiBase,
 }
 
 type Configuration struct {
@@ -44,7 +44,7 @@ type Capability interface {
 	Enabled() bool
 	ShortName() string
 	ArgName() string
-	Properties() *dynatracev1beta1.CapabilityProperties
+	Properties() *dynatracev1beta2.ActiveGateProperties
 	Config() Configuration
 	InitContainersTemplates() []corev1.Container
 	ContainerVolumeMounts() []corev1.VolumeMount
@@ -55,7 +55,7 @@ type capabilityBase struct {
 	enabled    bool
 	shortName  string
 	argName    string
-	properties *dynatracev1beta1.CapabilityProperties
+	properties *dynatracev1beta2.ActiveGateProperties
 	Configuration
 	initContainersTemplates []corev1.Container
 	containerVolumeMounts   []corev1.VolumeMount
@@ -66,7 +66,7 @@ func (c *capabilityBase) Enabled() bool {
 	return c.enabled
 }
 
-func (c *capabilityBase) Properties() *dynatracev1beta1.CapabilityProperties {
+func (c *capabilityBase) Properties() *dynatracev1beta2.ActiveGateProperties {
 	return c.properties
 }
 
@@ -102,21 +102,11 @@ func CalculateStatefulSetName(capability Capability, instanceName string) string
 	return instanceName + "-" + capability.ShortName()
 }
 
-// Deprecated
-type KubeMonCapability struct {
-	capabilityBase
-}
-
-// Deprecated
-type RoutingCapability struct {
-	capabilityBase
-}
-
 type MultiCapability struct {
 	capabilityBase
 }
 
-func (c *capabilityBase) setTlsConfig(agSpec *dynatracev1beta1.ActiveGateSpec) {
+func (c *capabilityBase) setTlsConfig(agSpec *dynatracev1beta2.ActiveGateSpec) {
 	if agSpec == nil {
 		return
 	}
@@ -140,20 +130,20 @@ func (c *capabilityBase) setTlsConfig(agSpec *dynatracev1beta1.ActiveGateSpec) {
 	}
 }
 
-func NewMultiCapability(dk *dynatracev1beta1.DynaKube) *MultiCapability {
+func NewMultiCapability(activeGate *dynatracev1beta2.ActiveGateSpec) *MultiCapability {
 	mc := MultiCapability{
 		capabilityBase{
 			shortName: MultiActiveGateName,
 		},
 	}
-	if dk == nil || !dk.ActiveGateMode() {
+	if activeGate == nil || len(activeGate.Capabilities) == 0 {
 		mc.CreateService = true // necessary for cleaning up service if created
 		return &mc
 	}
 	mc.enabled = true
-	mc.properties = &dk.Spec.ActiveGate.CapabilityProperties
+	mc.properties = &activeGate.ActiveGateProperties
 	capabilityNames := []string{}
-	for _, capName := range dk.Spec.ActiveGate.Capabilities {
+	for capName := range activeGate.Capabilities {
 		capabilityGenerator, ok := activeGateCapabilities[capName]
 		if !ok {
 			continue
@@ -182,41 +172,15 @@ func NewMultiCapability(dk *dynatracev1beta1.DynaKube) *MultiCapability {
 		}
 	}
 	mc.argName = strings.Join(capabilityNames, ",")
-	mc.setTlsConfig(&dk.Spec.ActiveGate)
+	mc.setTlsConfig(activeGate)
 	return &mc
 
 }
 
-// Deprecated
-func NewKubeMonCapability(dk *dynatracev1beta1.DynaKube) *KubeMonCapability {
-	c := &KubeMonCapability{
-		*kubeMonBase(),
-	}
-	if dk == nil {
-		return c
-	}
-	c.enabled = dk.Spec.KubernetesMonitoring.Enabled
-	c.properties = &dk.Spec.KubernetesMonitoring.CapabilityProperties
-	return c
-}
-
-// Deprecated
-func NewRoutingCapability(dk *dynatracev1beta1.DynaKube) *RoutingCapability {
-	c := &RoutingCapability{
-		*routingBase(),
-	}
-	if dk == nil {
-		return c
-	}
-	c.enabled = dk.Spec.Routing.Enabled
-	c.properties = &dk.Spec.Routing.CapabilityProperties
-	return c
-}
-
 func kubeMonBase() *capabilityBase {
 	c := capabilityBase{
-		shortName: dynatracev1beta1.KubeMonCapability.ShortName,
-		argName:   dynatracev1beta1.KubeMonCapability.ArgumentName,
+		shortName: dynatracev1beta2.KubeMonCapability.ShortName,
+		argName:   dynatracev1beta2.KubeMonCapability.ArgumentName,
 		Configuration: Configuration{
 			ServiceAccountOwner: "kubernetes-monitoring",
 		},
@@ -254,8 +218,8 @@ func kubeMonBase() *capabilityBase {
 
 func routingBase() *capabilityBase {
 	c := capabilityBase{
-		shortName: dynatracev1beta1.RoutingCapability.ShortName,
-		argName:   dynatracev1beta1.RoutingCapability.ArgumentName,
+		shortName: dynatracev1beta2.RoutingCapability.ShortName,
+		argName:   dynatracev1beta2.RoutingCapability.ArgumentName,
 		Configuration: Configuration{
 			SetDnsEntryPoint:     true,
 			SetReadinessPort:     true,
@@ -268,8 +232,8 @@ func routingBase() *capabilityBase {
 
 func metricsIngestBase() *capabilityBase {
 	c := capabilityBase{
-		shortName: dynatracev1beta1.MetricsIngestCapability.ShortName,
-		argName:   dynatracev1beta1.MetricsIngestCapability.ArgumentName,
+		shortName: dynatracev1beta2.MetricsIngestCapability.ShortName,
+		argName:   dynatracev1beta2.MetricsIngestCapability.ArgumentName,
 		Configuration: Configuration{
 			SetDnsEntryPoint:     true,
 			SetReadinessPort:     true,
@@ -282,8 +246,8 @@ func metricsIngestBase() *capabilityBase {
 
 func dynatraceApiBase() *capabilityBase {
 	c := capabilityBase{
-		shortName: dynatracev1beta1.DynatraceApiCapability.ShortName,
-		argName:   dynatracev1beta1.DynatraceApiCapability.ArgumentName,
+		shortName: dynatracev1beta2.DynatraceApiCapability.ShortName,
+		argName:   dynatracev1beta2.DynatraceApiCapability.ArgumentName,
 		Configuration: Configuration{
 			SetDnsEntryPoint:     true,
 			SetReadinessPort:     true,

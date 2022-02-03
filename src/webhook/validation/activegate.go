@@ -3,13 +3,10 @@ package validation
 import (
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 )
 
 const (
-	errorConflictingActiveGateSections = `The DynaKube's specification tries to use the deprecated ActiveGate section(s) alongside the new ActiveGate section, which is not supported.
-`
-
 	errorInvalidActiveGateCapability = `The DynaKube's specification tries to use an invalid capability in ActiveGate section, invalid capability=%s.
 Make sure you correctly specify the ActiveGate capabilities in your custom resource.
 `
@@ -19,36 +16,32 @@ Make sure you don't duplicate an Activegate capability in your custom resource.
 `
 )
 
-func conflictingActiveGateConfiguration(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
-	if dynakube.DeprecatedActiveGateMode() && dynakube.ActiveGateMode() {
-		log.Info("requested dynakube has conflicting active gate configuration", "name", dynakube.Name, "namespace", dynakube.Namespace)
-		return errorConflictingActiveGateSections
-	}
-	return ""
-}
-
-func duplicateActiveGateCapabilities(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func duplicateActiveGateCapabilities(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	if dynakube.ActiveGateMode() {
-		capabilities := dynakube.Spec.ActiveGate.Capabilities
-		duplicateChecker := map[dynatracev1beta1.CapabilityDisplayName]bool{}
-		for _, capability := range capabilities {
-			if duplicateChecker[capability] {
-				log.Info("requested dynakube has duplicates in the active gate capabilities section", "name", dynakube.Name, "namespace", dynakube.Namespace)
-				return fmt.Sprintf(errorDuplicateActiveGateCapability, capability)
+		for _, activeGate := range dynakube.Spec.ActiveGates {
+			capabilities := activeGate.Capabilities
+			duplicateChecker := map[dynatracev1beta2.CapabilityDisplayName]bool{}
+			for capabilityName := range capabilities {
+				if duplicateChecker[capabilityName] {
+					log.Info("requested dynakube has duplicates in the active gate capabilities section", "name", dynakube.Name, "namespace", dynakube.Namespace, "activegate", activeGate.Name)
+					return fmt.Sprintf(errorDuplicateActiveGateCapability, capabilityName)
+				}
+				duplicateChecker[capabilityName] = true
 			}
-			duplicateChecker[capability] = true
 		}
 	}
 	return ""
 }
 
-func invalidActiveGateCapabilities(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func invalidActiveGateCapabilities(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	if dynakube.ActiveGateMode() {
-		capabilities := dynakube.Spec.ActiveGate.Capabilities
-		for _, capability := range capabilities {
-			if _, ok := dynatracev1beta1.ActiveGateDisplayNames[capability]; !ok {
-				log.Info("requested dynakube has invalid active gate capability", "name", dynakube.Name, "namespace", dynakube.Namespace)
-				return fmt.Sprintf(errorInvalidActiveGateCapability, capability)
+		for _, activeGate := range dynakube.Spec.ActiveGates {
+			capabilities := activeGate.Capabilities
+			for capabilityName := range capabilities {
+				if _, ok := dynatracev1beta2.ActiveGateDisplayNames[capabilityName]; !ok {
+					log.Info("requested dynakube has invalid active gate capability", "name", dynakube.Name, "namespace", dynakube.Namespace, "activegate", activeGate.Name)
+					return fmt.Sprintf(errorInvalidActiveGateCapability, capabilityName)
+				}
 			}
 		}
 	}

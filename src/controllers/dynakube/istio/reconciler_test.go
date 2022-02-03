@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -80,7 +80,7 @@ func TestController_ReconcileIstio(t *testing.T) {
 	require.NoError(t, err)
 
 	virtualService := buildVirtualService(testVirtualServiceName, DefaultTestNamespace, "localhost", serverUrl.Scheme, uint32(port))
-	instance := &dynatracev1beta1.DynaKube{}
+	instance := &dynatracev1beta2.DynaKube{}
 	reconciler := IstioReconciler{
 		istioClient: fakeistio.NewSimpleClientset(virtualService),
 		scheme:      scheme.Scheme,

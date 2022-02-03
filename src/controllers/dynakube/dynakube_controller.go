@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Dynatrace/dynatrace-operator/src/agproxysecret"
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/reconciler/automaticapimonitoring"
 	rcap "github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/reconciler/capability"
@@ -59,7 +59,7 @@ func NewController(mgr manager.Manager) *DynakubeController {
 
 func (controller *DynakubeController) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&dynatracev1beta1.DynaKube{}).
+		For(&dynatracev1beta2.DynaKube{}).
 		Owns(&appsv1.StatefulSet{}).
 		Owns(&appsv1.DaemonSet{}).
 		Complete(controller)
@@ -102,7 +102,7 @@ func (controller *DynakubeController) Reconcile(ctx context.Context, request rec
 	log.Info("reconciling DynaKube", "namespace", request.Namespace, "name", request.Name)
 
 	// Fetch the DynaKube instance
-	instance := &dynatracev1beta1.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: request.NamespacedName.Name}}
+	instance := &dynatracev1beta2.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: request.NamespacedName.Name}}
 	dkMapper := mapper.NewDynakubeMapper(ctx, controller.client, controller.apiReader, controller.operatorNamespace, instance)
 	err := controller.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
@@ -198,7 +198,7 @@ func (controller *DynakubeController) reconcileDynaKube(ctx context.Context, dkS
 	dkState.Update(upd, defaultUpdateInterval, "Found updates")
 	dkState.Error(err)
 
-	if !controller.reconcileActiveGate(ctx, dkState, dtc) {
+	if !controller.reconcileActiveGates(ctx, dkState, dtc) {
 		return
 	}
 
@@ -274,11 +274,18 @@ func (controller *DynakubeController) ensureDeleted(obj client.Object) error {
 	return nil
 }
 
-func (controller *DynakubeController) reconcileActiveGate(ctx context.Context, dynakubeState *status.DynakubeState, dtc dtclient.Client) bool {
+func (controller *DynakubeController) reconcileActiveGates(ctx context.Context, dynakubeState *status.DynakubeState, dtc dtclient.Client) bool {
 	if !controller.reconcileActiveGateProxySecret(ctx, dynakubeState) {
 		return false
 	}
-	return controller.reconcileActiveGateCapabilities(dynakubeState, dtc)
+
+	for _, activeGate := range dynakubeState.Instance.Spec.ActiveGates {
+		if !controller.reconcileActiveGateCapabilities(activeGate.Name, dynakubeState, dtc) {
+			return false
+		}
+	}
+
+	return controller.reconcileAutomaticApiMonitoring(dynakubeState, dtc)
 }
 
 func (controller *DynakubeController) reconcileActiveGateProxySecret(ctx context.Context, dynakubeState *status.DynakubeState) bool {
@@ -296,45 +303,43 @@ func (controller *DynakubeController) reconcileActiveGateProxySecret(ctx context
 	return true
 }
 
-func (controller *DynakubeController) reconcileActiveGateCapabilities(dynakubeState *status.DynakubeState, dtc dtclient.Client) bool {
-	var caps = []capability.Capability{
-		capability.NewKubeMonCapability(dynakubeState.Instance),
-		capability.NewRoutingCapability(dynakubeState.Instance),
-		capability.NewMultiCapability(dynakubeState.Instance),
-	}
+func (controller *DynakubeController) reconcileActiveGateCapabilities(activeGateName string, dynakubeState *status.DynakubeState, dtc dtclient.Client) bool {
+	c := capability.NewMultiCapability(dynakubeState.Instance.ActiveGateByName(activeGateName))
 
-	for _, c := range caps {
-		if c.Enabled() {
-			upd, err := rcap.NewReconciler(
-				c, controller.client, controller.apiReader, controller.scheme, dynakubeState.Instance).Reconcile()
-			if dynakubeState.Error(err) || dynakubeState.Update(upd, defaultUpdateInterval, c.ShortName()+" reconciled") {
-				return false
-			}
-		} else {
-			sts := appsv1.StatefulSet{
+	if c.Enabled() {
+		upd, err := rcap.NewReconciler(
+			c, controller.client, controller.apiReader, controller.scheme, dynakubeState.Instance).Reconcile()
+		if dynakubeState.Error(err) || dynakubeState.Update(upd, defaultUpdateInterval, c.ShortName()+" reconciled") {
+			return false
+		}
+	} else {
+		sts := appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      capability.CalculateStatefulSetName(c, dynakubeState.Instance.Name),
+				Namespace: dynakubeState.Instance.Namespace,
+			},
+		}
+		if err := controller.ensureDeleted(&sts); dynakubeState.Error(err) {
+			return false
+		}
+
+		if c.Config().CreateService {
+			svc := corev1.Service{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      capability.CalculateStatefulSetName(c, dynakubeState.Instance.Name),
+					Name:      rcap.BuildServiceName(dynakubeState.Instance.Name, c.ShortName()),
 					Namespace: dynakubeState.Instance.Namespace,
 				},
 			}
-			if err := controller.ensureDeleted(&sts); dynakubeState.Error(err) {
+			if err := controller.ensureDeleted(&svc); dynakubeState.Error(err) {
 				return false
-			}
-
-			if c.Config().CreateService {
-				svc := corev1.Service{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      rcap.BuildServiceName(dynakubeState.Instance.Name, c.ShortName()),
-						Namespace: dynakubeState.Instance.Namespace,
-					},
-				}
-				if err := controller.ensureDeleted(&svc); dynakubeState.Error(err) {
-					return false
-				}
 			}
 		}
 	}
 
+	return true
+}
+
+func (controller *DynakubeController) reconcileAutomaticApiMonitoring(dynakubeState *status.DynakubeState, dtc dtclient.Client) bool {
 	//start automatic config creation
 	if dynakubeState.Instance.Status.KubeSystemUUID != "" &&
 		dynakubeState.Instance.FeatureAutomaticKubernetesApiMonitoring() &&
@@ -349,7 +354,7 @@ func (controller *DynakubeController) reconcileActiveGateCapabilities(dynakubeSt
 	return true
 }
 
-func (controller *DynakubeController) updateCR(ctx context.Context, instance *dynatracev1beta1.DynaKube) error {
+func (controller *DynakubeController) updateCR(ctx context.Context, instance *dynatracev1beta2.DynaKube) error {
 	instance.Status.UpdatedTimestamp = metav1.Now()
 	err := controller.client.Status().Update(ctx, instance)
 	if err != nil && k8serrors.IsConflict(err) {

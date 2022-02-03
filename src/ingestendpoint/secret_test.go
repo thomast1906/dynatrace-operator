@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/mapper"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme/fake"
 	"github.com/stretchr/testify/assert"
@@ -248,29 +248,31 @@ func updateTestSecret(t *testing.T, fakeClient client.Client) {
 	assert.NoError(t, err)
 }
 
-func updatedTestDynakube() *dynatracev1beta1.DynaKube {
-	return &dynatracev1beta1.DynaKube{
+func updatedTestDynakube() *dynatracev1beta2.DynaKube {
+	return &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testDynakubeName,
 			Namespace: testNamespaceDynatrace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: testUpdatedApiUrl,
 		},
 	}
 }
 
-func updatedTestDynakubeWithDataIngestCapability() *dynatracev1beta1.DynaKube {
-	return &dynatracev1beta1.DynaKube{
+func updatedTestDynakubeWithDataIngestCapability() *dynatracev1beta2.DynaKube {
+	return &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testDynakubeName,
 			Namespace: testNamespaceDynatrace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			ActiveGate: dynatracev1beta1.ActiveGateSpec{
-				Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-					dynatracev1beta1.CapabilityDisplayName(dynatracev1beta1.KubeMonCapability.ShortName),
-					dynatracev1beta1.CapabilityDisplayName(dynatracev1beta1.MetricsIngestCapability.ShortName),
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.CapabilityDisplayName(dynatracev1beta2.KubeMonCapability.ShortName):       {},
+						dynatracev1beta2.CapabilityDisplayName(dynatracev1beta2.MetricsIngestCapability.ShortName): {},
+					},
 				},
 			},
 			APIURL: testUpdatedApiUrl,
@@ -279,7 +281,7 @@ func updatedTestDynakubeWithDataIngestCapability() *dynatracev1beta1.DynaKube {
 }
 
 func updateTestDynakube(t *testing.T, fakeClient client.Client) {
-	var dk dynatracev1beta1.DynaKube
+	var dk dynatracev1beta2.DynaKube
 	err := fakeClient.Get(context.TODO(), client.ObjectKey{Name: testDynakubeName, Namespace: testNamespaceDynatrace}, &dk)
 	assert.NoError(t, err)
 
@@ -289,29 +291,31 @@ func updateTestDynakube(t *testing.T, fakeClient client.Client) {
 	assert.NoError(t, err)
 }
 
-func buildTestDynakube() *dynatracev1beta1.DynaKube {
-	return &dynatracev1beta1.DynaKube{
+func buildTestDynakube() *dynatracev1beta2.DynaKube {
+	return &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testDynakubeName,
 			Namespace: testNamespaceDynatrace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: testApiUrl,
 		},
 	}
 }
 
-func buildTestDynakubeWithDataIngestCapability() *dynatracev1beta1.DynaKube {
-	return &dynatracev1beta1.DynaKube{
+func buildTestDynakubeWithDataIngestCapability() *dynatracev1beta2.DynaKube {
+	return &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testDynakubeName,
 			Namespace: testNamespaceDynatrace,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			ActiveGate: dynatracev1beta1.ActiveGateSpec{
-				Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-					dynatracev1beta1.CapabilityDisplayName(dynatracev1beta1.KubeMonCapability.ShortName),
-					dynatracev1beta1.CapabilityDisplayName(dynatracev1beta1.MetricsIngestCapability.ShortName),
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.CapabilityDisplayName(dynatracev1beta2.KubeMonCapability.ShortName):       {},
+						dynatracev1beta2.CapabilityDisplayName(dynatracev1beta2.MetricsIngestCapability.ShortName): {},
+					},
 				},
 			},
 			APIURL: testApiUrl,
@@ -319,7 +323,7 @@ func buildTestDynakubeWithDataIngestCapability() *dynatracev1beta1.DynaKube {
 	}
 }
 
-func buildTestClientBeforeGenerate(dk *dynatracev1beta1.DynaKube) client.Client {
+func buildTestClientBeforeGenerate(dk *dynatracev1beta2.DynaKube) client.Client {
 	return fake.NewClient(dk,
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -355,7 +359,7 @@ func buildTestClientBeforeGenerate(dk *dynatracev1beta1.DynaKube) client.Client 
 		})
 }
 
-func buildTestClientAfterGenerate(dk *dynatracev1beta1.DynaKube) client.Client {
+func buildTestClientAfterGenerate(dk *dynatracev1beta2.DynaKube) client.Client {
 	return fake.NewClient(dk,
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{

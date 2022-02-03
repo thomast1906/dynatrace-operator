@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	dynatracev1alpha1 "github.com/Dynatrace/dynatrace-operator/src/api/v1alpha1"
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,7 +22,7 @@ func CreateClient(t *testing.T) client.Client {
 	err = dynatracev1alpha1.AddToScheme(scheme.Scheme)
 	assert.NoError(t, err)
 
-	err = dynatracev1beta1.AddToScheme(scheme.Scheme)
+	err = dynatracev1beta2.AddToScheme(scheme.Scheme)
 	assert.NoError(t, err)
 
 	clt, err := client.New(cfg, client.Options{

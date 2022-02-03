@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 )
 
 const (
@@ -18,7 +18,7 @@ const (
 	`
 )
 
-func noApiUrl(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func noApiUrl(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	apiUrl := dynakube.Spec.APIURL
 
 	if apiUrl == exampleApiUrl {
@@ -34,7 +34,7 @@ func noApiUrl(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string
 	return ""
 }
 
-func isInvalidApiUrl(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func isInvalidApiUrl(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	apiUrl := dynakube.Spec.APIURL
 
 	if !strings.HasSuffix(apiUrl, "/api") {

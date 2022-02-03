@@ -3,7 +3,7 @@ package metadata
 import (
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme/fake"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -33,7 +33,7 @@ func TestCheckStorageCorrectness_DoNothing(t *testing.T) {
 	db.InsertVolume(&testVolume1)
 	client := fake.NewClient(
 		&corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: testVolume1.PodName}},
-		&dynatracev1beta1.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: testDynakube1.Name}},
+		&dynatracev1beta2.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: testDynakube1.Name}},
 	)
 
 	err := CorrectMetadata(client, db)
@@ -54,7 +54,7 @@ func TestCheckStorageCorrectness_PURGE(t *testing.T) {
 	db.InsertDynakube(&testDynakube3)
 	client := fake.NewClient(
 		&corev1.Pod{ObjectMeta: metav1.ObjectMeta{Name: testVolume1.PodName}},
-		&dynatracev1beta1.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: testDynakube1.Name}},
+		&dynatracev1beta2.DynaKube{ObjectMeta: metav1.ObjectMeta{Name: testDynakube1.Name}},
 	)
 
 	err := CorrectMetadata(client, db)

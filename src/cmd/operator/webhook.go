@@ -18,7 +18,7 @@ package main
 
 import (
 	"github.com/Dynatrace/dynatrace-operator/src/api/v1alpha1"
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/kubesystem"
 	"github.com/Dynatrace/dynatrace-operator/src/webhook"
 	"github.com/Dynatrace/dynatrace-operator/src/webhook/mutation"
@@ -63,7 +63,7 @@ func setupWebhookServer(ns string, cfg *rest.Config) (manager.Manager, func(), e
 		return nil, cleanUp, err
 	}
 
-	if err := (&dynatracev1beta1.DynaKube{}).SetupWebhookWithManager(mgr); err != nil {
+	if err := (&dynatracev1beta2.DynaKube{}).SetupWebhookWithManager(mgr); err != nil {
 		return nil, cleanUp, err
 	}
 

@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/csi/metadata"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/csi/provisioner/arch"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
@@ -23,7 +23,7 @@ type installAgentConfig struct {
 	dtc      dtclient.Client
 	fs       afero.Fs
 	path     metadata.PathResolver
-	dk       *dynatracev1beta1.DynaKube
+	dk       *dynatracev1beta2.DynaKube
 	recorder record.EventRecorder
 }
 
@@ -32,7 +32,7 @@ func newInstallAgentConfig(
 	path metadata.PathResolver,
 	fs afero.Fs,
 	recorder record.EventRecorder,
-	dk *dynatracev1beta1.DynaKube,
+	dk *dynatracev1beta2.DynaKube,
 ) *installAgentConfig {
 	return &installAgentConfig{
 		dtc:      dtc,

@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
 	"github.com/Dynatrace/dynatrace-operator/src/kubesystem"
@@ -55,7 +55,7 @@ func NewInitGenerator(client client.Client, apiReader client.Reader, ns string) 
 
 // GenerateForNamespace creates the init secret for namespace while only having the name of the corresponding dynakube
 // Used by the podInjection webhook in case the namespace lacks the init secret.
-func (g *InitGenerator) GenerateForNamespace(ctx context.Context, dk dynatracev1beta1.DynaKube, targetNs string) (bool, error) {
+func (g *InitGenerator) GenerateForNamespace(ctx context.Context, dk dynatracev1beta2.DynaKube, targetNs string) (bool, error) {
 	log.Info("reconciling namespace init secret for", "namespace", targetNs)
 	g.canWatchNodes = false
 	data, err := g.generate(ctx, &dk)
@@ -67,7 +67,7 @@ func (g *InitGenerator) GenerateForNamespace(ctx context.Context, dk dynatracev1
 
 // GenerateForDynakube creates/updates the init secret for EVERY namespace for the given dynakube.
 // Used by the dynakube controller during reconcile.
-func (g *InitGenerator) GenerateForDynakube(ctx context.Context, dk *dynatracev1beta1.DynaKube) (bool, error) {
+func (g *InitGenerator) GenerateForDynakube(ctx context.Context, dk *dynatracev1beta2.DynaKube) (bool, error) {
 	log.Info("reconciling namespace init secret for", "dynakube", dk.Name)
 	g.canWatchNodes = true
 	data, err := g.generate(ctx, dk)
@@ -92,7 +92,7 @@ func (g *InitGenerator) GenerateForDynakube(ctx context.Context, dk *dynatracev1
 }
 
 // generate gets the necessary info the create the init secret data
-func (g *InitGenerator) generate(ctx context.Context, dk *dynatracev1beta1.DynaKube) (map[string][]byte, error) {
+func (g *InitGenerator) generate(ctx context.Context, dk *dynatracev1beta2.DynaKube) (map[string][]byte, error) {
 	kubeSystemUID, err := kubesystem.GetUID(g.apiReader)
 	if err != nil {
 		return nil, err
@@ -116,7 +116,7 @@ func (g *InitGenerator) generate(ctx context.Context, dk *dynatracev1beta1.DynaK
 	return data, nil
 }
 
-func (g *InitGenerator) prepareScriptForDynaKube(dk *dynatracev1beta1.DynaKube, kubeSystemUID types.UID, infraMonitoringNodes map[string]string) (*script, error) {
+func (g *InitGenerator) prepareScriptForDynaKube(dk *dynatracev1beta2.DynaKube, kubeSystemUID types.UID, infraMonitoringNodes map[string]string) (*script, error) {
 	var tokens corev1.Secret
 	if err := g.client.Get(context.TODO(), client.ObjectKey{Name: dk.Tokens(), Namespace: g.namespace}, &tokens); err != nil {
 		return nil, errors.WithMessage(err, "failed to query tokens")
@@ -145,9 +145,9 @@ func (g *InitGenerator) prepareScriptForDynaKube(dk *dynatracev1beta1.DynaKube, 
 	}
 
 	var tlsCert string
-	if dk.HasActiveGateTLS() {
+	if dk.Spec.OneAgent.TlsSecretName != "" {
 		var tlsSecret corev1.Secret
-		if err := g.client.Get(context.TODO(), client.ObjectKey{Name: dk.Spec.ActiveGate.TlsSecretName, Namespace: g.namespace}, &tlsSecret); err != nil {
+		if err := g.client.Get(context.TODO(), client.ObjectKey{Name: dk.Spec.OneAgent.TlsSecretName, Namespace: g.namespace}, &tlsSecret); err != nil {
 			return nil, fmt.Errorf("failed to query tls secret: %w", err)
 		}
 		tlsCert = string(tlsSecret.Data[tlsCertKey])
@@ -181,7 +181,7 @@ func getPaasToken(tokens corev1.Secret) []byte {
 // - unknown: there SHOULD be a infra-monitoring agent on the node, but dynakube has NO tenantUID set => user processes will restart until this is fixed (node.Name not present in the map)
 //
 // Checks all the dynakubes with infra-monitoring against all the nodes (using the nodeSelector), creating the above mentioned mapping.
-func (g *InitGenerator) getInfraMonitoringNodes(dk *dynatracev1beta1.DynaKube) (map[string]string, error) {
+func (g *InitGenerator) getInfraMonitoringNodes(dk *dynatracev1beta2.DynaKube) (map[string]string, error) {
 
 	imNodes := map[string]string{}
 	if !dk.CloudNativeFullstackMode() {

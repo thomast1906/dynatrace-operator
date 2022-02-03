@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -17,7 +17,7 @@ The conflicting Dynakube: %s
 `
 )
 
-func conflictingOneAgentConfiguration(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func conflictingOneAgentConfiguration(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	counter := 0
 	if dynakube.ApplicationMonitoringMode() {
 		counter += 1
@@ -38,11 +38,11 @@ func conflictingOneAgentConfiguration(dv *dynakubeValidator, dynakube *dynatrace
 	return ""
 }
 
-func conflictingNodeSelector(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func conflictingNodeSelector(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	if !dynakube.NeedsOneAgent() {
 		return ""
 	}
-	validDynakubes := &dynatracev1beta1.DynaKubeList{}
+	validDynakubes := &dynatracev1beta2.DynaKubeList{}
 	if err := dv.clt.List(context.TODO(), validDynakubes); err != nil {
 		log.Info("error occurred while listing dynakubes", "err", err.Error())
 		return ""

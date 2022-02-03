@@ -5,27 +5,27 @@ import (
 	"strings"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	v1 "k8s.io/api/core/v1"
 )
 
 func Test_capabilityBase_Properties(t *testing.T) {
-	props := &dynatracev1beta1.CapabilityProperties{}
+	props := &dynatracev1beta2.ActiveGateProperties{}
 
 	type fields struct {
-		properties *dynatracev1beta1.CapabilityProperties
+		properties *dynatracev1beta2.ActiveGateProperties
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   *dynatracev1beta1.CapabilityProperties
+		want   *dynatracev1beta2.ActiveGateProperties
 	}{
 		{
 			name: "properties address is preserved",
 			fields: fields{
 				properties: props,
 			},
-			want: &dynatracev1beta1.CapabilityProperties{},
+			want: &dynatracev1beta2.ActiveGateProperties{},
 		},
 	}
 	for _, tt := range tests {
@@ -140,7 +140,7 @@ func Test_capabilityBase_GetCapabilityName(t *testing.T) {
 }
 
 func TestCalculateStatefulSetName(t *testing.T) {
-	c := NewKubeMonCapability(nil)
+	c := NewMultiCapability(nil)
 	const instanceName = "testinstance"
 
 	type args struct {
@@ -171,32 +171,38 @@ func TestCalculateStatefulSetName(t *testing.T) {
 }
 
 func TestNewKubeMonCapability(t *testing.T) {
-	props := &dynatracev1beta1.CapabilityProperties{}
-	dk := &dynatracev1beta1.DynaKube{
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			KubernetesMonitoring: dynatracev1beta1.KubernetesMonitoringSpec{
-				CapabilityProperties: *props,
+	props := &dynatracev1beta2.ActiveGateProperties{}
+	dk := &dynatracev1beta2.DynaKube{
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.KubeMonCapability.DisplayName: {},
+					},
+					ActiveGateProperties: *props,
+				},
 			},
 		},
 	}
 
 	type args struct {
-		dynakube *dynatracev1beta1.DynaKube
+		dynakube *dynatracev1beta2.DynaKube
 	}
 	tests := []struct {
 		name string
 		args args
-		want *KubeMonCapability
+		want *MultiCapability
 	}{
 		{
 			name: "default",
 			args: args{
 				dynakube: dk,
 			},
-			want: &KubeMonCapability{
+			want: &MultiCapability{
 				capabilityBase: capabilityBase{
-					shortName:  dynatracev1beta1.KubeMonCapability.ShortName,
-					argName:    dynatracev1beta1.KubeMonCapability.ArgumentName,
+					enabled:    true,
+					shortName:  MultiActiveGateName,
+					argName:    dynatracev1beta2.KubeMonCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						ServiceAccountOwner: "kubernetes-monitoring",
@@ -235,7 +241,7 @@ func TestNewKubeMonCapability(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewKubeMonCapability(tt.args.dynakube); !reflect.DeepEqual(got, tt.want) {
+			if got := NewMultiCapability(&tt.args.dynakube.Spec.ActiveGates[0]); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewKubeMonCapability() = %v, want %v", got, tt.want)
 			}
 		})
@@ -243,33 +249,38 @@ func TestNewKubeMonCapability(t *testing.T) {
 }
 
 func TestNewRoutingCapability(t *testing.T) {
-
-	props := &dynatracev1beta1.CapabilityProperties{}
-	dk := &dynatracev1beta1.DynaKube{
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			Routing: dynatracev1beta1.RoutingSpec{
-				CapabilityProperties: *props,
+	props := &dynatracev1beta2.ActiveGateProperties{}
+	dk := &dynatracev1beta2.DynaKube{
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.RoutingCapability.DisplayName: {},
+					},
+					ActiveGateProperties: *props,
+				},
 			},
 		},
 	}
 
 	type args struct {
-		dynakube *dynatracev1beta1.DynaKube
+		dynakube *dynatracev1beta2.DynaKube
 	}
 	tests := []struct {
 		name string
 		args args
-		want *RoutingCapability
+		want *MultiCapability
 	}{
 		{
 			name: "default",
 			args: args{
 				dynakube: dk,
 			},
-			want: &RoutingCapability{
+			want: &MultiCapability{
 				capabilityBase: capabilityBase{
-					shortName:  dynatracev1beta1.RoutingCapability.ShortName,
-					argName:    dynatracev1beta1.RoutingCapability.ArgumentName,
+					enabled:    true,
+					shortName:  MultiActiveGateName,
+					argName:    dynatracev1beta2.RoutingCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						SetDnsEntryPoint:     true,
@@ -284,7 +295,7 @@ func TestNewRoutingCapability(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewRoutingCapability(tt.args.dynakube); !reflect.DeepEqual(got, tt.want) {
+			if got := NewMultiCapability(&tt.args.dynakube.Spec.ActiveGates[0]); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewRoutingCapability() = %v, want %v", got, tt.want)
 			}
 		})
@@ -293,10 +304,10 @@ func TestNewRoutingCapability(t *testing.T) {
 
 func TestNewMultiCapability(t *testing.T) {
 
-	props := &dynatracev1beta1.CapabilityProperties{}
+	props := &dynatracev1beta2.ActiveGateProperties{}
 
 	type args struct {
-		dynakube *dynatracev1beta1.DynaKube
+		dynakube *dynatracev1beta2.DynaKube
 	}
 	tests := []struct {
 		name string
@@ -306,8 +317,12 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "empty",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{},
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{},
+						},
+					},
 				},
 			},
 			want: &MultiCapability{
@@ -323,11 +338,13 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "just routing",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{
-						ActiveGate: dynatracev1beta1.ActiveGateSpec{
-							Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-								dynatracev1beta1.RoutingCapability.DisplayName,
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.RoutingCapability.DisplayName: {},
+								},
 							},
 						},
 					},
@@ -337,7 +354,7 @@ func TestNewMultiCapability(t *testing.T) {
 				capabilityBase: capabilityBase{
 					enabled:    true,
 					shortName:  MultiActiveGateName,
-					argName:    dynatracev1beta1.RoutingCapability.ArgumentName,
+					argName:    dynatracev1beta2.RoutingCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						SetDnsEntryPoint:     true,
@@ -352,11 +369,13 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "just metrics-ingest",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{
-						ActiveGate: dynatracev1beta1.ActiveGateSpec{
-							Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-								dynatracev1beta1.MetricsIngestCapability.DisplayName,
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.MetricsIngestCapability.DisplayName: {},
+								},
 							},
 						},
 					},
@@ -366,7 +385,7 @@ func TestNewMultiCapability(t *testing.T) {
 				capabilityBase: capabilityBase{
 					enabled:    true,
 					shortName:  MultiActiveGateName,
-					argName:    dynatracev1beta1.MetricsIngestCapability.ArgumentName,
+					argName:    dynatracev1beta2.MetricsIngestCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						SetDnsEntryPoint:     true,
@@ -381,11 +400,13 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "just dynatrace-api",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{
-						ActiveGate: dynatracev1beta1.ActiveGateSpec{
-							Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-								dynatracev1beta1.DynatraceApiCapability.DisplayName,
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.DynatraceApiCapability.DisplayName: {},
+								},
 							},
 						},
 					},
@@ -395,7 +416,7 @@ func TestNewMultiCapability(t *testing.T) {
 				capabilityBase: capabilityBase{
 					enabled:    true,
 					shortName:  MultiActiveGateName,
-					argName:    dynatracev1beta1.DynatraceApiCapability.ArgumentName,
+					argName:    dynatracev1beta2.DynatraceApiCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						SetDnsEntryPoint:     true,
@@ -410,11 +431,13 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "just kubemon",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{
-						ActiveGate: dynatracev1beta1.ActiveGateSpec{
-							Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-								dynatracev1beta1.KubeMonCapability.DisplayName,
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.KubeMonCapability.DisplayName: {},
+								},
 							},
 						},
 					},
@@ -424,7 +447,7 @@ func TestNewMultiCapability(t *testing.T) {
 				capabilityBase: capabilityBase{
 					enabled:    true,
 					shortName:  MultiActiveGateName,
-					argName:    dynatracev1beta1.KubeMonCapability.ArgumentName,
+					argName:    dynatracev1beta2.KubeMonCapability.ArgumentName,
 					properties: props,
 					Configuration: Configuration{
 						ServiceAccountOwner: "kubernetes-monitoring",
@@ -463,14 +486,16 @@ func TestNewMultiCapability(t *testing.T) {
 		{
 			name: "all capability at once",
 			args: args{
-				dynakube: &dynatracev1beta1.DynaKube{
-					Spec: dynatracev1beta1.DynaKubeSpec{
-						ActiveGate: dynatracev1beta1.ActiveGateSpec{
-							Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-								dynatracev1beta1.KubeMonCapability.DisplayName,
-								dynatracev1beta1.MetricsIngestCapability.DisplayName,
-								dynatracev1beta1.RoutingCapability.DisplayName,
-								dynatracev1beta1.DynatraceApiCapability.DisplayName,
+				dynakube: &dynatracev1beta2.DynaKube{
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.KubeMonCapability.DisplayName:       {},
+									dynatracev1beta2.MetricsIngestCapability.DisplayName: {},
+									dynatracev1beta2.RoutingCapability.DisplayName:       {},
+									dynatracev1beta2.DynatraceApiCapability.DisplayName:  {},
+								},
 							},
 						},
 					},
@@ -481,10 +506,10 @@ func TestNewMultiCapability(t *testing.T) {
 					enabled:   true,
 					shortName: MultiActiveGateName,
 					argName: strings.Join([]string{
-						dynatracev1beta1.KubeMonCapability.ArgumentName,
-						dynatracev1beta1.MetricsIngestCapability.ArgumentName,
-						dynatracev1beta1.RoutingCapability.ArgumentName,
-						dynatracev1beta1.DynatraceApiCapability.ArgumentName},
+						dynatracev1beta2.KubeMonCapability.ArgumentName,
+						dynatracev1beta2.MetricsIngestCapability.ArgumentName,
+						dynatracev1beta2.RoutingCapability.ArgumentName,
+						dynatracev1beta2.DynatraceApiCapability.ArgumentName},
 						","),
 					properties: props,
 					Configuration: Configuration{
@@ -528,7 +553,7 @@ func TestNewMultiCapability(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewMultiCapability(tt.args.dynakube); !reflect.DeepEqual(got, tt.want) {
+			if got := NewMultiCapability(&tt.args.dynakube.Spec.ActiveGates[0]); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewMultiCapability() = %v, want %v", got, tt.want)
 			}
 		})

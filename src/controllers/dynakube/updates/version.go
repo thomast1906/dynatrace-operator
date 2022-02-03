@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/dtversion"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/status"
 	"github.com/pkg/errors"
@@ -71,7 +71,7 @@ func ReconcileVersions(
 func updateImageVersion(
 	dkState *status.DynakubeState,
 	img string,
-	target *dynatracev1beta1.VersionStatus,
+	target *dynatracev1beta2.VersionStatus,
 	dockerCfg *dtversion.DockerConfig,
 	verProvider VersionProviderCallback,
 	allowDowngrades bool,

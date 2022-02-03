@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/oneagent/daemonset"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/status"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
@@ -33,7 +33,7 @@ func NewOneAgentReconciler(
 	client client.Client,
 	apiReader client.Reader,
 	scheme *runtime.Scheme,
-	instance *dynatracev1beta1.DynaKube,
+	instance *dynatracev1beta2.DynaKube,
 	feature string) *OneAgentReconciler {
 	return &OneAgentReconciler{
 		client:    client,
@@ -50,7 +50,7 @@ type OneAgentReconciler struct {
 	client    client.Client
 	apiReader client.Reader
 	scheme    *runtime.Scheme
-	instance  *dynatracev1beta1.DynaKube
+	instance  *dynatracev1beta2.DynaKube
 	feature   string
 }
 
@@ -153,7 +153,7 @@ func (r *OneAgentReconciler) getDesiredDaemonSet(dkState *status.DynakubeState) 
 	return dsDesired, nil
 }
 
-func (r *OneAgentReconciler) getPods(ctx context.Context, instance *dynatracev1beta1.DynaKube, feature string) ([]corev1.Pod, []client.ListOption, error) {
+func (r *OneAgentReconciler) getPods(ctx context.Context, instance *dynatracev1beta2.DynaKube, feature string) ([]corev1.Pod, []client.ListOption, error) {
 	podList := &corev1.PodList{}
 	listOps := []client.ListOption{
 		client.InNamespace((*instance).GetNamespace()),
@@ -187,7 +187,7 @@ func (r *OneAgentReconciler) newDaemonSetForCR(dkState *status.DynakubeState, cl
 	return ds, nil
 }
 
-func (r *OneAgentReconciler) reconcileInstanceStatuses(ctx context.Context, instance *dynatracev1beta1.DynaKube) (bool, error) {
+func (r *OneAgentReconciler) reconcileInstanceStatuses(ctx context.Context, instance *dynatracev1beta2.DynaKube) (bool, error) {
 	pods, listOpts, err := r.getPods(ctx, instance, r.feature)
 	if err != nil {
 		handlePodListError(err, listOpts)
@@ -208,11 +208,11 @@ func (r *OneAgentReconciler) reconcileInstanceStatuses(ctx context.Context, inst
 	return false, err
 }
 
-func getInstanceStatuses(pods []corev1.Pod) (map[string]dynatracev1beta1.OneAgentInstance, error) {
-	instanceStatuses := make(map[string]dynatracev1beta1.OneAgentInstance)
+func getInstanceStatuses(pods []corev1.Pod) (map[string]dynatracev1beta2.OneAgentInstance, error) {
+	instanceStatuses := make(map[string]dynatracev1beta2.OneAgentInstance)
 
 	for _, pod := range pods {
-		instanceStatuses[pod.Spec.NodeName] = dynatracev1beta1.OneAgentInstance{
+		instanceStatuses[pod.Spec.NodeName] = dynatracev1beta2.OneAgentInstance{
 			PodName:   pod.Name,
 			IPAddress: pod.Status.HostIP,
 		}
@@ -221,7 +221,7 @@ func getInstanceStatuses(pods []corev1.Pod) (map[string]dynatracev1beta1.OneAgen
 	return instanceStatuses, nil
 }
 
-func (r *OneAgentReconciler) determineDynaKubePhase(instance *dynatracev1beta1.DynaKube) (bool, error) {
+func (r *OneAgentReconciler) determineDynaKubePhase(instance *dynatracev1beta2.DynaKube) (bool, error) {
 	var phaseChanged bool
 	dsActual := &appsv1.DaemonSet{}
 	instanceName := fmt.Sprintf("%s-%s", instance.Name, r.feature)
@@ -232,17 +232,17 @@ func (r *OneAgentReconciler) determineDynaKubePhase(instance *dynatracev1beta1.D
 	}
 
 	if err != nil {
-		phaseChanged = instance.Status.Phase != dynatracev1beta1.Error
-		instance.Status.Phase = dynatracev1beta1.Error
+		phaseChanged = instance.Status.Phase != dynatracev1beta2.Error
+		instance.Status.Phase = dynatracev1beta2.Error
 		return phaseChanged, err
 	}
 
 	if dsActual.Status.NumberReady == dsActual.Status.CurrentNumberScheduled {
-		phaseChanged = instance.Status.Phase != dynatracev1beta1.Running
-		instance.Status.Phase = dynatracev1beta1.Running
+		phaseChanged = instance.Status.Phase != dynatracev1beta2.Running
+		instance.Status.Phase = dynatracev1beta2.Running
 	} else {
-		phaseChanged = instance.Status.Phase != dynatracev1beta1.Deploying
-		instance.Status.Phase = dynatracev1beta1.Deploying
+		phaseChanged = instance.Status.Phase != dynatracev1beta2.Deploying
+		instance.Status.Phase = dynatracev1beta2.Deploying
 	}
 
 	return phaseChanged, nil

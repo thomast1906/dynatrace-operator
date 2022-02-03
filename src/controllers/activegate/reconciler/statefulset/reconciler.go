@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/customproperties"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/internal/events"
@@ -23,13 +23,13 @@ import (
 
 type Reconciler struct {
 	client.Client
-	Instance                         *dynatracev1beta1.DynaKube
+	Instance                         *dynatracev1beta2.DynaKube
 	apiReader                        client.Reader
 	scheme                           *runtime.Scheme
 	feature                          string
 	capabilityName                   string
 	serviceAccountOwner              string
-	capability                       *dynatracev1beta1.CapabilityProperties
+	capability                       *dynatracev1beta2.ActiveGateProperties
 	onAfterStatefulSetCreateListener []events.StatefulSetEvent
 	initContainersTemplates          []corev1.Container
 	containerVolumeMounts            []corev1.VolumeMount
@@ -37,7 +37,7 @@ type Reconciler struct {
 }
 
 func NewReconciler(clt client.Client, apiReader client.Reader, scheme *runtime.Scheme,
-	instance *dynatracev1beta1.DynaKube, capability capability.Capability) *Reconciler {
+	instance *dynatracev1beta2.DynaKube, capability capability.Capability) *Reconciler {
 
 	serviceAccountOwner := capability.Config().ServiceAccountOwner
 	if serviceAccountOwner == "" {
@@ -201,7 +201,7 @@ func (r *Reconciler) calculateCustomPropertyHash() (string, error) {
 	return strconv.FormatUint(uint64(hash.Sum32()), 10), nil
 }
 
-func (r *Reconciler) getDataFromCustomProperty(customProperties *dynatracev1beta1.DynaKubeValueSource) (string, error) {
+func (r *Reconciler) getDataFromCustomProperty(customProperties *dynatracev1beta2.DynaKubeValueSource) (string, error) {
 	if customProperties.ValueFrom != "" {
 		namespace := r.Instance.Namespace
 		var secret corev1.Secret

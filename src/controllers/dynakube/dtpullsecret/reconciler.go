@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -22,12 +22,12 @@ const (
 type Reconciler struct {
 	client.Client
 	apiReader           client.Reader
-	instance            *dynatracev1beta1.DynaKube
+	instance            *dynatracev1beta2.DynaKube
 	scheme              *runtime.Scheme
 	apiToken, paasToken string
 }
 
-func NewReconciler(clt client.Client, apiReader client.Reader, scheme *runtime.Scheme, instance *dynatracev1beta1.DynaKube, apiToken, paasToken string) *Reconciler {
+func NewReconciler(clt client.Client, apiReader client.Reader, scheme *runtime.Scheme, instance *dynatracev1beta2.DynaKube, apiToken, paasToken string) *Reconciler {
 	if paasToken == "" {
 		paasToken = apiToken
 	}
@@ -111,7 +111,7 @@ func isPullSecretEqual(currentSecret *corev1.Secret, desired map[string][]byte) 
 	return reflect.DeepEqual(desired, currentSecret.Data)
 }
 
-func BuildPullSecret(instance *dynatracev1beta1.DynaKube, pullSecretData map[string][]byte) *corev1.Secret {
+func BuildPullSecret(instance *dynatracev1beta2.DynaKube, pullSecretData map[string][]byte) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      extendWithPullSecretSuffix(instance.Name),

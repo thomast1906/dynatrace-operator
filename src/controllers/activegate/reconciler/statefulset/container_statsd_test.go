@@ -12,7 +12,7 @@ func TestStatsD_BuildContainerAndVolumes(t *testing.T) {
 	assertion := assert.New(t)
 
 	instance := buildTestInstance()
-	capabilityProperties := &instance.Spec.ActiveGate.CapabilityProperties
+	capabilityProperties := &instance.Spec.ActiveGates[0].ActiveGateProperties
 	stsProperties := NewStatefulSetProperties(instance, capabilityProperties,
 		"", "", "test-feature", "", "",
 		nil, nil, nil,

@@ -3,13 +3,13 @@ package daemonset
 import (
 	"path/filepath"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 )
 
 const OneAgentCustomKeysPath = "/var/lib/dynatrace/oneagent/agent/customkeys"
 
-func prepareVolumeMounts(instance *dynatracev1beta1.DynaKube) []corev1.VolumeMount {
+func prepareVolumeMounts(instance *dynatracev1beta2.DynaKube) []corev1.VolumeMount {
 	rootMount := getRootMount()
 	var volumeMounts []corev1.VolumeMount
 
@@ -46,7 +46,7 @@ func getRootMount() corev1.VolumeMount {
 	}
 }
 
-func prepareVolumes(instance *dynatracev1beta1.DynaKube) []corev1.Volume {
+func prepareVolumes(instance *dynatracev1beta2.DynaKube) []corev1.Volume {
 	volumes := []corev1.Volume{getRootVolume()}
 
 	if instance.Spec.TrustedCAs != "" {
@@ -60,7 +60,7 @@ func prepareVolumes(instance *dynatracev1beta1.DynaKube) []corev1.Volume {
 	return volumes
 }
 
-func getCertificateVolume(instance *dynatracev1beta1.DynaKube) corev1.Volume {
+func getCertificateVolume(instance *dynatracev1beta2.DynaKube) corev1.Volume {
 	return corev1.Volume{
 		Name: "certs",
 		VolumeSource: corev1.VolumeSource{
@@ -79,12 +79,12 @@ func getCertificateVolume(instance *dynatracev1beta1.DynaKube) corev1.Volume {
 	}
 }
 
-func getTLSVolume(instance *dynatracev1beta1.DynaKube) corev1.Volume {
+func getTLSVolume(instance *dynatracev1beta2.DynaKube) corev1.Volume {
 	return corev1.Volume{
 		Name: "tls",
 		VolumeSource: corev1.VolumeSource{
 			Secret: &corev1.SecretVolumeSource{
-				SecretName: instance.Spec.ActiveGate.TlsSecretName,
+				SecretName: instance.Spec.OneAgent.TlsSecretName,
 				Items: []corev1.KeyToPath{
 					{
 						Key:  "server.crt",

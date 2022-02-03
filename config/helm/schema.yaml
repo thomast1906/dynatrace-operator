@@ -14,7 +14,7 @@
 
 x-google-marketplace:
   schemaVersion: v2
-  applicationApiVersion: v1beta1
+  applicationApiVersion: v1beta2
   publishedVersion: "0.4.0"
   publishedVersionMetadata:
     releaseNote: >-

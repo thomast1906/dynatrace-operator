@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubeobjects"
 	"github.com/Dynatrace/dynatrace-operator/src/processmoduleconfig"
@@ -137,7 +137,7 @@ func (installAgentCfg *installAgentConfig) checkProcessModuleConfigCopy(sourcePa
 	return nil
 }
 
-func addHostGroup(dk *dynatracev1beta1.DynaKube, pmc *dtclient.ProcessModuleConfig) *dtclient.ProcessModuleConfig {
+func addHostGroup(dk *dynatracev1beta2.DynaKube, pmc *dtclient.ProcessModuleConfig) *dtclient.ProcessModuleConfig {
 	if pmc == nil {
 		pmc = &dtclient.ProcessModuleConfig{}
 	}

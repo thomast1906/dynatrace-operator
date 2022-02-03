@@ -26,7 +26,7 @@ webhooks:
     timeoutSeconds: 2
     rules:
       - apiGroups: [ "" ]
-        apiVersions: [ "v1" ]
+        apiVersions: [ "v2" ]
         operations: [ "CREATE" ]
         resources: [ "pods" ]
         scope: Namespaced
@@ -39,7 +39,7 @@ webhooks:
         name: dynatrace-webhook
         namespace: {{ .Release.Namespace }}
         path: /inject
-    admissionReviewVersions: [ "v1beta1", "v1" ]
+    admissionReviewVersions: [ "v1beta2", "v1" ]
     sideEffects: None
   - name: webhook.ns.dynatrace.com
     reinvocationPolicy: IfNeeded
@@ -47,7 +47,7 @@ webhooks:
     timeoutSeconds: 2
     rules:
       - apiGroups: [ "" ]
-        apiVersions: [ "v1" ]
+        apiVersions: [ "v2" ]
         operations: [ "CREATE", "UPDATE"]
         resources: [ "namespaces" ]
         scope: Cluster
@@ -56,6 +56,6 @@ webhooks:
         name: dynatrace-webhook
         namespace: {{ .Release.Namespace }}
         path: /label-ns
-    admissionReviewVersions: [ "v1beta1", "v1" ]
+    admissionReviewVersions: [ "v1beta2", "v1" ]
     sideEffects: None
 {{ end }}

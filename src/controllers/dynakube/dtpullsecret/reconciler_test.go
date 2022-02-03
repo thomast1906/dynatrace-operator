@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme/fake"
@@ -22,7 +22,7 @@ const (
 func TestReconciler_Reconcile(t *testing.T) {
 	t.Run(`Reconcile works with minimal setup`, func(t *testing.T) {
 		mockDTC := &dtclient.MockDynatraceClient{}
-		instance := &dynatracev1beta1.DynaKube{
+		instance := &dynatracev1beta2.DynaKube{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: testNamespace,
 				Name:      testName,
@@ -50,12 +50,12 @@ func TestReconciler_Reconcile(t *testing.T) {
 		assert.NotEmpty(t, pullSecret.Data[".dockerconfigjson"])
 	})
 	t.Run(`Reconcile does not reconcile with custom pull secret`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{
+		instance := &dynatracev1beta2.DynaKube{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: testNamespace,
 				Name:      testName,
 			},
-			Spec: dynatracev1beta1.DynaKubeSpec{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				CustomPullSecret: testValue,
 			}}
 		r := NewReconciler(nil, nil, nil, instance, "nil", "")
@@ -65,16 +65,16 @@ func TestReconciler_Reconcile(t *testing.T) {
 	})
 	t.Run(`Reconcile creates correct docker config`, func(t *testing.T) {
 		expectedJSON := `{"auths":{"test-endpoint.com":{"username":"test-name","password":"test-value","auth":"dGVzdC1uYW1lOnRlc3QtdmFsdWU="}}}`
-		instance := &dynatracev1beta1.DynaKube{
+		instance := &dynatracev1beta2.DynaKube{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: testNamespace,
 				Name:      testName,
 			},
-			Spec: dynatracev1beta1.DynaKubeSpec{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testEndpoint,
 			},
-			Status: dynatracev1beta1.DynaKubeStatus{
-				ConnectionInfo: dynatracev1beta1.ConnectionInfoStatus{
+			Status: dynatracev1beta2.DynaKubeStatus{
+				ConnectionInfo: dynatracev1beta2.ConnectionInfoStatus{
 					TenantUUID: testName,
 				},
 			},
@@ -100,16 +100,16 @@ func TestReconciler_Reconcile(t *testing.T) {
 	})
 	t.Run(`Reconcile update secret if data changed`, func(t *testing.T) {
 		expectedJSON := `{"auths":{"test-endpoint.com":{"username":"test-name","password":"test-value","auth":"dGVzdC1uYW1lOnRlc3QtdmFsdWU="}}}`
-		instance := &dynatracev1beta1.DynaKube{
+		instance := &dynatracev1beta2.DynaKube{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: testNamespace,
 				Name:      testName,
 			},
-			Spec: dynatracev1beta1.DynaKubeSpec{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testEndpoint,
 			},
-			Status: dynatracev1beta1.DynaKubeStatus{
-				ConnectionInfo: dynatracev1beta1.ConnectionInfoStatus{
+			Status: dynatracev1beta2.DynaKubeStatus{
+				ConnectionInfo: dynatracev1beta2.ConnectionInfoStatus{
 					TenantUUID: testName,
 				},
 			},

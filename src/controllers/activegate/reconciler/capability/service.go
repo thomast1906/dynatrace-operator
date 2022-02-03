@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/internal/consts"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/reconciler/statefulset"
 	corev1 "k8s.io/api/core/v1"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func createService(instance *dynatracev1beta1.DynaKube, feature string) *corev1.Service {
+func createService(instance *dynatracev1beta2.DynaKube, feature string) *corev1.Service {
 	enableStatsD := instance.FeatureEnableStatsDIngest()
 	ports := []corev1.ServicePort{
 		{

@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/e2e"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,17 +45,17 @@ func prepareDefaultEnvironment(t *testing.T) (string, client.Client) {
 	return apiURL, clt
 }
 
-func createMinimumViableOneAgent(apiURL string) dynatracev1beta1.DynaKube {
-	return dynatracev1beta1.DynaKube{
+func createMinimumViableOneAgent(apiURL string) dynatracev1beta2.DynaKube {
+	return dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: namespace,
 			Name:      testName,
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: apiURL,
 			Tokens: e2e.TokenSecretName,
-			OneAgent: dynatracev1beta1.OneAgentSpec{
-				ClassicFullStack: &dynatracev1beta1.ClassicFullStackSpec{
+			OneAgent: dynatracev1beta2.OneAgentSpec{
+				ClassicFullStack: &dynatracev1beta2.ClassicFullStackSpec{
 					Image: testImage,
 				},
 			},
@@ -63,19 +63,19 @@ func createMinimumViableOneAgent(apiURL string) dynatracev1beta1.DynaKube {
 	}
 }
 
-func deployOneAgent(t *testing.T, clt client.Client, oneAgent *dynatracev1beta1.DynaKube) e2e.PhaseWait {
+func deployOneAgent(t *testing.T, clt client.Client, oneAgent *dynatracev1beta2.DynaKube) e2e.PhaseWait {
 	err := clt.Create(context.TODO(), oneAgent)
 	assert.NoError(t, err)
 
 	phaseWait := e2e.NewOneAgentWaitConfiguration(t, clt, maxWaitCycles, namespace, testName)
-	err = phaseWait.WaitForPhase(dynatracev1beta1.Deploying)
+	err = phaseWait.WaitForPhase(dynatracev1beta2.Deploying)
 	assert.NoError(t, err)
 
 	return phaseWait
 }
 
-func findOneAgentPods(t *testing.T, clt client.Client) (*dynatracev1beta1.DynaKube, *corev1.PodList) {
-	instance := &dynatracev1beta1.DynaKube{}
+func findOneAgentPods(t *testing.T, clt client.Client) (*dynatracev1beta2.DynaKube, *corev1.PodList) {
+	instance := &dynatracev1beta2.DynaKube{}
 	err := clt.Get(context.TODO(), client.ObjectKey{Namespace: namespace, Name: testName}, instance)
 	assert.NoError(t, err)
 

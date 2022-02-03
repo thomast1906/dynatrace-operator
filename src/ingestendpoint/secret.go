@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	agcapability "github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/activegate/reconciler/capability"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
@@ -45,7 +45,7 @@ func NewEndpointSecretGenerator(client client.Client, apiReader client.Reader, n
 // Used by the podInjection webhook in case the namespace lacks the secret.
 func (g *EndpointSecretGenerator) GenerateForNamespace(ctx context.Context, dkName, targetNs string) (bool, error) {
 	log.Info("reconciling data-ingest endpoint secret for", "namespace", targetNs)
-	var dk dynatracev1beta1.DynaKube
+	var dk dynatracev1beta2.DynaKube
 	if err := g.client.Get(ctx, client.ObjectKey{Name: dkName, Namespace: g.namespace}, &dk); err != nil {
 		return false, err
 	}
@@ -59,7 +59,7 @@ func (g *EndpointSecretGenerator) GenerateForNamespace(ctx context.Context, dkNa
 
 // GenerateForDynakube creates/updates the data-ingest-endpoint secret for EVERY namespace for the given dynakube.
 // Used by the dynakube controller during reconcile.
-func (g *EndpointSecretGenerator) GenerateForDynakube(ctx context.Context, dk *dynatracev1beta1.DynaKube) (bool, error) {
+func (g *EndpointSecretGenerator) GenerateForDynakube(ctx context.Context, dk *dynatracev1beta2.DynaKube) (bool, error) {
 	log.Info("reconciling data-ingest endpoint secret for", "dynakube", dk.Name)
 
 	data, err := g.prepare(ctx, dk)
@@ -83,7 +83,7 @@ func (g *EndpointSecretGenerator) GenerateForDynakube(ctx context.Context, dk *d
 	return anyUpdate, nil
 }
 
-func (g *EndpointSecretGenerator) RemoveEndpointSecrets(ctx context.Context, dk *dynatracev1beta1.DynaKube) error {
+func (g *EndpointSecretGenerator) RemoveEndpointSecrets(ctx context.Context, dk *dynatracev1beta2.DynaKube) error {
 	nsList, err := mapper.GetNamespacesForDynakube(ctx, g.apiReader, dk.Name)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func (g *EndpointSecretGenerator) RemoveEndpointSecrets(ctx context.Context, dk 
 	return nil
 }
 
-func (g *EndpointSecretGenerator) prepare(ctx context.Context, dk *dynatracev1beta1.DynaKube) (map[string][]byte, error) {
+func (g *EndpointSecretGenerator) prepare(ctx context.Context, dk *dynatracev1beta2.DynaKube) (map[string][]byte, error) {
 	fields, err := g.PrepareFields(ctx, dk)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -123,7 +123,7 @@ func (g *EndpointSecretGenerator) prepare(ctx context.Context, dk *dynatracev1be
 	return data, nil
 }
 
-func (g *EndpointSecretGenerator) PrepareFields(ctx context.Context, dk *dynatracev1beta1.DynaKube) (map[string]string, error) {
+func (g *EndpointSecretGenerator) PrepareFields(ctx context.Context, dk *dynatracev1beta2.DynaKube) (map[string]string, error) {
 	var tokens corev1.Secret
 	if err := g.client.Get(ctx, client.ObjectKey{Name: dk.Tokens(), Namespace: g.namespace}, &tokens); err != nil {
 		return nil, errors.WithMessage(err, "failed to query tokens")
@@ -145,8 +145,8 @@ func (g *EndpointSecretGenerator) PrepareFields(ctx context.Context, dk *dynatra
 	}, nil
 }
 
-func dataIngestUrl(dk *dynatracev1beta1.DynaKube) (string, error) {
-	if dk.IsActiveGateMode(dynatracev1beta1.MetricsIngestCapability.DisplayName) {
+func dataIngestUrl(dk *dynatracev1beta2.DynaKube) (string, error) {
+	if dk.IsActiveGateMode(dynatracev1beta2.MetricsIngestCapability.DisplayName) {
 		return metricsIngestUrlForClusterActiveGate(dk)
 	} else if len(dk.Spec.APIURL) > 0 {
 		return metricsIngestUrlForDynatraceActiveGate(dk)
@@ -155,11 +155,11 @@ func dataIngestUrl(dk *dynatracev1beta1.DynaKube) (string, error) {
 	}
 }
 
-func metricsIngestUrlForDynatraceActiveGate(dk *dynatracev1beta1.DynaKube) (string, error) {
+func metricsIngestUrlForDynatraceActiveGate(dk *dynatracev1beta2.DynaKube) (string, error) {
 	return fmt.Sprintf("%s/v2/metrics/ingest", dk.Spec.APIURL), nil
 }
 
-func metricsIngestUrlForClusterActiveGate(dk *dynatracev1beta1.DynaKube) (string, error) {
+func metricsIngestUrlForClusterActiveGate(dk *dynatracev1beta2.DynaKube) (string, error) {
 	apiUrl, err := url.Parse(dk.Spec.APIURL)
 	if err != nil {
 		return "", errors.WithMessage(err, "failed to parse DynaKube.spec.apiUrl")

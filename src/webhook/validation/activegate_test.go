@@ -4,88 +4,66 @@ import (
 	"fmt"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 )
 
 func TestConflictingActiveGateConfiguration(t *testing.T) {
 	t.Run(`valid dynakube specs`, func(t *testing.T) {
 
-		assertAllowedResponseWithoutWarnings(t, &dynatracev1beta1.DynaKube{
+		assertAllowedResponseWithoutWarnings(t, &dynatracev1beta2.DynaKube{
 			ObjectMeta: defaultDynakubeObjectMeta,
-			Spec: dynatracev1beta1.DynaKubeSpec{
+			Spec: dynatracev1beta2.DynaKubeSpec{
 				APIURL: testApiUrl,
-				Routing: dynatracev1beta1.RoutingSpec{
-					Enabled: true,
-				},
-				KubernetesMonitoring: dynatracev1beta1.KubernetesMonitoringSpec{
-					Enabled: true,
-				},
-			},
-		})
-
-		assertAllowedResponseWithoutWarnings(t, &dynatracev1beta1.DynaKube{
-			ObjectMeta: defaultDynakubeObjectMeta,
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				APIURL: testApiUrl,
-				ActiveGate: dynatracev1beta1.ActiveGateSpec{
-					Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-						dynatracev1beta1.RoutingCapability.DisplayName,
-						dynatracev1beta1.KubeMonCapability.DisplayName,
-					},
-				},
-			},
-		})
-
-		assertAllowedResponseWithWarnings(t, 2, &dynatracev1beta1.DynaKube{
-			ObjectMeta: defaultDynakubeObjectMeta,
-			Spec: dynatracev1beta1.DynaKubeSpec{
-				APIURL: testApiUrl,
-				ActiveGate: dynatracev1beta1.ActiveGateSpec{
-					Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-						dynatracev1beta1.MetricsIngestCapability.DisplayName,
-					},
-				},
-			},
-		})
-	})
-	t.Run(`conflicting dynakube specs`, func(t *testing.T) {
-		assertDeniedResponse(t,
-			[]string{errorConflictingActiveGateSections},
-			&dynatracev1beta1.DynaKube{
-				ObjectMeta: defaultDynakubeObjectMeta,
-				Spec: dynatracev1beta1.DynaKubeSpec{
-					APIURL: testApiUrl,
-					Routing: dynatracev1beta1.RoutingSpec{
-						Enabled: true,
-					},
-					ActiveGate: dynatracev1beta1.ActiveGateSpec{
-						Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-							dynatracev1beta1.RoutingCapability.DisplayName,
+				ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+					{
+						Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+							dynatracev1beta2.RoutingCapability.DisplayName: {},
+							dynatracev1beta2.KubeMonCapability.DisplayName: {},
 						},
 					},
 				},
-			})
+			},
+		})
+
+		assertAllowedResponseWithWarnings(t, 2, &dynatracev1beta2.DynaKube{
+			ObjectMeta: defaultDynakubeObjectMeta,
+			Spec: dynatracev1beta2.DynaKubeSpec{
+				APIURL: testApiUrl,
+				ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+					{
+						Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+							dynatracev1beta2.MetricsIngestCapability.DisplayName: {},
+						},
+					},
+				},
+			},
+		})
 	})
 }
 
 func TestDuplicateActiveGateCapabilities(t *testing.T) {
+	/*
+		There is no way to insert 2 routing capabilities into Capabilities MAP
 
-	t.Run(`conflicting dynakube specs`, func(t *testing.T) {
-		assertDeniedResponse(t,
-			[]string{fmt.Sprintf(errorDuplicateActiveGateCapability, dynatracev1beta1.RoutingCapability.DisplayName)},
-			&dynatracev1beta1.DynaKube{
-				ObjectMeta: defaultDynakubeObjectMeta,
-				Spec: dynatracev1beta1.DynaKubeSpec{
-					APIURL: testApiUrl,
-					ActiveGate: dynatracev1beta1.ActiveGateSpec{
-						Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-							dynatracev1beta1.RoutingCapability.DisplayName,
-							dynatracev1beta1.RoutingCapability.DisplayName,
+		t.Run(`conflicting dynakube specs`, func(t *testing.T) {
+			assertDeniedResponse(t,
+				[]string{fmt.Sprintf(errorDuplicateActiveGateCapability, dynatracev1beta2.RoutingCapability.DisplayName)},
+				&dynatracev1beta2.DynaKube{
+					ObjectMeta: defaultDynakubeObjectMeta,
+					Spec: dynatracev1beta2.DynaKubeSpec{
+						APIURL: testApiUrl,
+						ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+							{
+								Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+									dynatracev1beta2.RoutingCapability.DisplayName: {},
+									dynatracev1beta2.RoutingCapability.DisplayName: {},
+								},
+							},
 						},
 					},
-				},
-			})
-	})
+				})
+		})
+	*/
 }
 
 func TestInvalidActiveGateCapabilities(t *testing.T) {
@@ -93,13 +71,15 @@ func TestInvalidActiveGateCapabilities(t *testing.T) {
 	t.Run(`conflicting dynakube specs`, func(t *testing.T) {
 		assertDeniedResponse(t,
 			[]string{fmt.Sprintf(errorInvalidActiveGateCapability, "invalid-capability")},
-			&dynatracev1beta1.DynaKube{
+			&dynatracev1beta2.DynaKube{
 				ObjectMeta: defaultDynakubeObjectMeta,
-				Spec: dynatracev1beta1.DynaKubeSpec{
+				Spec: dynatracev1beta2.DynaKubeSpec{
 					APIURL: testApiUrl,
-					ActiveGate: dynatracev1beta1.ActiveGateSpec{
-						Capabilities: []dynatracev1beta1.CapabilityDisplayName{
-							"invalid-capability",
+					ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+						{
+							Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+								"invalid-capability": {},
+							},
 						},
 					},
 				},

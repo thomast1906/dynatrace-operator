@@ -3,7 +3,7 @@ package metadata
 import (
 	"context"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,7 +51,7 @@ func correctDynakubes(cl client.Client, access Access) error {
 	}
 	pruned := []string{}
 	for dynakubeName := range dynakubes {
-		var dynakube dynatracev1beta1.DynaKube
+		var dynakube dynatracev1beta2.DynaKube
 		if err := cl.Get(context.TODO(), client.ObjectKey{Name: dynakubeName}, &dynakube); !k8serrors.IsNotFound(err) {
 			continue
 		}

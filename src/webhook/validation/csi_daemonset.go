@@ -3,7 +3,7 @@ package validation
 import (
 	"context"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	dtcsi "github.com/Dynatrace/dynatrace-operator/src/controllers/csi"
 	appsv1 "k8s.io/api/apps/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -15,7 +15,7 @@ const (
 `
 )
 
-func missingCSIDaemonSet(dv *dynakubeValidator, dynakube *dynatracev1beta1.DynaKube) string {
+func missingCSIDaemonSet(dv *dynakubeValidator, dynakube *dynatracev1beta2.DynaKube) string {
 	if !dynakube.NeedsCSIDriver() {
 		return ""
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubesystem"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme/fake"
@@ -39,7 +39,7 @@ func TestStatusOptions(t *testing.T) {
 
 func TestSetDynakubeStatus(t *testing.T) {
 	t.Run(`set status`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient(&v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -88,7 +88,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.NotNil(t, instance.Status.ConnectionInfo)
 		assert.Equal(t, testUUID, instance.Status.ConnectionInfo.TenantUUID)
 		assert.NotNil(t, instance.Status.ConnectionInfo.CommunicationHosts)
-		assert.Equal(t, []dynatracev1beta1.CommunicationHostStatus{
+		assert.Equal(t, []dynatracev1beta2.CommunicationHostStatus{
 			{
 				Protocol: testProtocol,
 				Host:     testHost,
@@ -105,7 +105,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.Equal(t, testVersionPaas, instance.Status.LatestAgentVersionUnixPaas)
 	})
 	t.Run(`error querying kube system uid`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient()
 		options := Options{
@@ -117,7 +117,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.EqualError(t, err, "namespaces \"kube-system\" not found")
 	})
 	t.Run(`error querying communication host for client`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient(&v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -136,7 +136,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.EqualError(t, err, testError)
 	})
 	t.Run(`error querying connection info`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient(&v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -161,7 +161,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.EqualError(t, err, testError)
 	})
 	t.Run(`error querying latest agent version for unix / default`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient(&v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -202,7 +202,7 @@ func TestSetDynakubeStatus(t *testing.T) {
 		assert.EqualError(t, err, testError)
 	})
 	t.Run(`error querying latest agent version for unix / paas`, func(t *testing.T) {
-		instance := &dynatracev1beta1.DynaKube{}
+		instance := &dynatracev1beta2.DynaKube{}
 		dtc := &dtclient.MockDynatraceClient{}
 		clt := fake.NewClient(&v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{

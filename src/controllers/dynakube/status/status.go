@@ -1,7 +1,7 @@
 package status
 
 import (
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/kubesystem"
 	"github.com/pkg/errors"
@@ -13,7 +13,7 @@ type Options struct {
 	ApiClient client.Reader
 }
 
-func SetDynakubeStatus(instance *dynatracev1beta1.DynaKube, opts Options) error {
+func SetDynakubeStatus(instance *dynatracev1beta2.DynaKube, opts Options) error {
 	clt := opts.ApiClient
 	dtc := opts.Dtc
 
@@ -42,9 +42,9 @@ func SetDynakubeStatus(instance *dynatracev1beta1.DynaKube, opts Options) error 
 		return errors.WithStack(err)
 	}
 
-	communicationHostStatus := dynatracev1beta1.CommunicationHostStatus(communicationHost)
+	communicationHostStatus := dynatracev1beta2.CommunicationHostStatus(communicationHost)
 
-	connectionInfoStatus := dynatracev1beta1.ConnectionInfoStatus{
+	connectionInfoStatus := dynatracev1beta2.ConnectionInfoStatus{
 		CommunicationHosts: communicationHostsToStatus(connectionInfo.CommunicationHosts),
 		TenantUUID:         connectionInfo.TenantUUID,
 	}
@@ -58,11 +58,11 @@ func SetDynakubeStatus(instance *dynatracev1beta1.DynaKube, opts Options) error 
 	return nil
 }
 
-func communicationHostsToStatus(communicationHosts []dtclient.CommunicationHost) []dynatracev1beta1.CommunicationHostStatus {
-	var communicationHostStatuses []dynatracev1beta1.CommunicationHostStatus
+func communicationHostsToStatus(communicationHosts []dtclient.CommunicationHost) []dynatracev1beta2.CommunicationHostStatus {
+	var communicationHostStatuses []dynatracev1beta2.CommunicationHostStatus
 
 	for _, communicationHost := range communicationHosts {
-		communicationHostStatuses = append(communicationHostStatuses, dynatracev1beta1.CommunicationHostStatus(communicationHost))
+		communicationHostStatuses = append(communicationHostStatuses, dynatracev1beta2.CommunicationHostStatus(communicationHost))
 	}
 
 	return communicationHostStatuses

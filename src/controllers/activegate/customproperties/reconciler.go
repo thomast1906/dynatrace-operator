@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -25,12 +25,12 @@ const (
 type Reconciler struct {
 	client.Client
 	scheme                    *runtime.Scheme
-	customPropertiesSource    dynatracev1beta1.DynaKubeValueSource
+	customPropertiesSource    dynatracev1beta2.DynaKubeValueSource
 	customPropertiesOwnerName string
-	instance                  *dynatracev1beta1.DynaKube
+	instance                  *dynatracev1beta2.DynaKube
 }
 
-func NewReconciler(clt client.Client, instance *dynatracev1beta1.DynaKube, customPropertiesOwnerName string, customPropertiesSource dynatracev1beta1.DynaKubeValueSource, scheme *runtime.Scheme) *Reconciler {
+func NewReconciler(clt client.Client, instance *dynatracev1beta2.DynaKube, customPropertiesOwnerName string, customPropertiesSource dynatracev1beta2.DynaKubeValueSource, scheme *runtime.Scheme) *Reconciler {
 	return &Reconciler{
 		Client:                    clt,
 		instance:                  instance,

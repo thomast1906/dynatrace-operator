@@ -52,7 +52,6 @@ type DynaKubeValueSource struct {
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-//+kubebuilder:storageversion
 
 // DynaKube is the Schema for the DynaKube API
 // +k8s:openapi-gen=true

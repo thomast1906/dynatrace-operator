@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -35,13 +35,13 @@ func TestGetImageRegistryFromAPIURL(t *testing.T) {
 }
 
 func TestReconciler_GenerateData(t *testing.T) {
-	instance := &dynatracev1beta1.DynaKube{
-		Spec: dynatracev1beta1.DynaKubeSpec{
+	instance := &dynatracev1beta2.DynaKube{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: testApiUrl,
 		},
-		Status: dynatracev1beta1.DynaKubeStatus{
-			ConnectionInfo: dynatracev1beta1.ConnectionInfoStatus{
-				CommunicationHosts: []dynatracev1beta1.CommunicationHostStatus{
+		Status: dynatracev1beta2.DynaKubeStatus{
+			ConnectionInfo: dynatracev1beta2.ConnectionInfoStatus{
+				CommunicationHosts: []dynatracev1beta2.CommunicationHostStatus{
 					{
 						Protocol: testProtocol,
 						Host:     testHost,

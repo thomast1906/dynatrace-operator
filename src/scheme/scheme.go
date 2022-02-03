@@ -19,6 +19,7 @@ package scheme
 import (
 	dynatracev1alpha1 "github.com/Dynatrace/dynatrace-operator/src/api/v1alpha1"
 	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	istiov1alpha3 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	apiv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
@@ -34,6 +35,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(Scheme))
 	utilruntime.Must(dynatracev1alpha1.AddToScheme(Scheme))
 	utilruntime.Must(dynatracev1beta1.AddToScheme(Scheme))
+	utilruntime.Must(dynatracev1beta2.AddToScheme(Scheme))
 	utilruntime.Must(istiov1alpha3.AddToScheme(Scheme))
 	utilruntime.Must(corev1.AddToScheme(Scheme))
 	utilruntime.Must(apiv1.AddToScheme(Scheme))

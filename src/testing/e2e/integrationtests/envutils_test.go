@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	"github.com/Dynatrace/dynatrace-operator/src/scheme"
@@ -104,8 +104,8 @@ func (e *ControllerTestEnvironment) Stop() error {
 	return e.server.Stop()
 }
 
-func (e *ControllerTestEnvironment) AddOneAgent(n string, s *dynatracev1beta1.DynaKubeSpec) error {
-	return e.Client.Create(context.TODO(), &dynatracev1beta1.DynaKube{
+func (e *ControllerTestEnvironment) AddOneAgent(n string, s *dynatracev1beta2.DynaKubeSpec) error {
+	return e.Client.Create(context.TODO(), &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      n,
 			Namespace: DefaultTestNamespace,

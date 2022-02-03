@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	dtcsi "github.com/Dynatrace/dynatrace-operator/src/controllers/csi"
 	"github.com/Dynatrace/dynatrace-operator/src/dtclient"
 	dtingestendpoint "github.com/Dynatrace/dynatrace-operator/src/ingestendpoint"
@@ -89,17 +89,17 @@ func TestInjectionWithMissingOneAgentAPM(t *testing.T) {
 	)
 }
 
-func createPodInjector(_ *testing.T, decoder *admission.Decoder, injectionInfo *InjectionInfo) (*podMutator, *dynatracev1beta1.DynaKube) {
-	dynakube := &dynatracev1beta1.DynaKube{
+func createPodInjector(_ *testing.T, decoder *admission.Decoder, injectionInfo *InjectionInfo) (*podMutator, *dynatracev1beta2.DynaKube) {
+	dynakube := &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      dynakubeName,
 			Namespace: "dynatrace",
 		},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: "https://tenant.test-api-url.com/api",
-			OneAgent: dynatracev1beta1.OneAgentSpec{
-				CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{
-					AppInjectionSpec: dynatracev1beta1.AppInjectionSpec{
+			OneAgent: dynatracev1beta2.OneAgentSpec{
+				CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{
+					AppInjectionSpec: dynatracev1beta2.AppInjectionSpec{
 						InitResources: corev1.ResourceRequirements{
 							Limits: corev1.ResourceList{
 								corev1.ResourceCPU:    resource.MustParse("1"),
@@ -485,13 +485,13 @@ func TestPodInjectionWithCSI(t *testing.T) {
 	)
 }
 
-func createDynakubeInstance(_ *testing.T) *dynatracev1beta1.DynaKube {
-	instance := &dynatracev1beta1.DynaKube{
+func createDynakubeInstance(_ *testing.T) *dynatracev1beta2.DynaKube {
+	instance := &dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{Name: dynakubeName, Namespace: "dynatrace"},
-		Spec: dynatracev1beta1.DynaKubeSpec{
+		Spec: dynatracev1beta2.DynaKubeSpec{
 			APIURL: "https://tenant.test-api-url.com/api",
-			OneAgent: dynatracev1beta1.OneAgentSpec{
-				CloudNativeFullStack: &dynatracev1beta1.CloudNativeFullStackSpec{},
+			OneAgent: dynatracev1beta2.OneAgentSpec{
+				CloudNativeFullStack: &dynatracev1beta2.CloudNativeFullStackSpec{},
 			},
 		},
 	}

@@ -22,7 +22,7 @@ import (
 	"errors"
 	"testing"
 
-	dynatracev1beta1 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta1"
+	dynatracev1beta2 "github.com/Dynatrace/dynatrace-operator/src/api/v1beta2"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/dtpullsecret"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/dtversion"
 	"github.com/Dynatrace/dynatrace-operator/src/controllers/dynakube/status"
@@ -46,14 +46,18 @@ const (
 func TestReconcile_UpdateImageVersion(t *testing.T) {
 	ctx := context.Background()
 
-	dk := dynatracev1beta1.DynaKube{
+	dk := dynatracev1beta2.DynaKube{
 		ObjectMeta: metav1.ObjectMeta{Name: testName, Namespace: testNamespace},
-		Spec: dynatracev1beta1.DynaKubeSpec{
-			KubernetesMonitoring: dynatracev1beta1.KubernetesMonitoringSpec{
-				Enabled: true,
+		Spec: dynatracev1beta2.DynaKubeSpec{
+			ActiveGates: []dynatracev1beta2.ActiveGateSpec{
+				{
+					Capabilities: map[dynatracev1beta2.CapabilityDisplayName]dynatracev1beta2.CapabilityProperties{
+						dynatracev1beta2.KubeMonCapability.DisplayName: {},
+					},
+				},
 			},
-			OneAgent: dynatracev1beta1.OneAgentSpec{
-				ClassicFullStack: &dynatracev1beta1.ClassicFullStackSpec{},
+			OneAgent: dynatracev1beta2.OneAgentSpec{
+				ClassicFullStack: &dynatracev1beta2.ClassicFullStackSpec{},
 			},
 		},
 	}
