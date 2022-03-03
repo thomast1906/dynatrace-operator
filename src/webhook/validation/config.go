@@ -23,6 +23,7 @@ var validators = []validator{
 }
 
 var warnings = []validator{
+	deprecatedFeatureFlagFormat,
 	metricIngestPreviewWarning,
 	statsdIngestPreviewWarning,
 	missingActiveGateMemoryLimit,
