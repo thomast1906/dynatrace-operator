@@ -135,6 +135,7 @@ activeGate:
   labels: {}
   env: []
   tlsSecretName: ""
+  priorityClassName: ""
 
 # deprecated
 kubernetesMonitoring:
