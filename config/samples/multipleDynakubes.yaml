@@ -70,6 +70,7 @@ spec:
     capabilities:
       - routing
       - metrics-ingest
+      - statsd-ingest
       - dynatrace-api
 
     # Amount of replicas of activegate pods
