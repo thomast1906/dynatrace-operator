@@ -70,7 +70,7 @@ createSecurityContextConstraints: true # Only applicable for Openshift
 ### module properties
 
 classicFullStack:
-  enabled: false
+  enabled: true
   image: ""
   version: ""
   nodeSelector: {}
